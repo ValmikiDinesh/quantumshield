@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Mail, KeyRound, Lock, ArrowRight, Loader2, AlertCircle, Eye, EyeOff, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Shield, Mail, KeyRound, Lock, ArrowRight, Loader2, AlertCircle, Eye, EyeOff, CheckCircle2, ArrowLeft, RefreshCw, Inbox } from 'lucide-react';
 import { api } from '../../api/client';
 
 export const ForgotPasswordPage: React.FC = () => {
@@ -11,9 +11,9 @@ export const ForgotPasswordPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [serverCode, setServerCode] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
@@ -27,11 +27,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
     try {
       const res = await api.forgotPassword(email.trim().toLowerCase());
-      if (res.resetCode) {
-        setServerCode(res.resetCode);
-        setCode(res.resetCode); // Pre-fill for convenience
-      }
-      setStatusMessage('Verification code generated. Please enter your code and new password.');
+      setStatusMessage(res.message || 'Verification code dispatched. Please check your email inbox.');
       setStep('reset');
     } catch (err: any) {
       setError(err.message || 'Failed to request password reset code. Please try again.');
@@ -40,9 +36,29 @@ export const ForgotPasswordPage: React.FC = () => {
     }
   };
 
+  const handleResendCode = async () => {
+    setError(null);
+    setStatusMessage(null);
+    setIsResending(true);
+
+    try {
+      const res = await api.forgotPassword(email.trim().toLowerCase());
+      setStatusMessage(res.message || 'A fresh verification code has been dispatched to your email.');
+    } catch (err: any) {
+      setError(err.message || 'Failed to resend verification code.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (code.trim().length !== 6) {
+      setError('Please enter the complete 6-digit verification code sent to your email.');
+      return;
+    }
 
     if (newPassword.length < 8) {
       setError('New password must be at least 8 characters in length.');
@@ -70,7 +86,7 @@ export const ForgotPasswordPage: React.FC = () => {
         },
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to reset password. Please verify your verification code.');
+      setError(err.message || 'Invalid or expired verification code. Please check your email or request a new code.');
     } finally {
       setIsLoading(false);
     }
@@ -91,12 +107,12 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
         </Link>
         <h2 className="mt-6 text-2xl font-bold text-white tracking-tight">
-          {step === 'request' ? 'Reset Your Password' : 'Set New Password'}
+          {step === 'request' ? 'Reset Your Password' : 'Enter Verification Code'}
         </h2>
         <p className="mt-1 text-xs text-slate-400">
           {step === 'request'
             ? 'Enter your work email address to receive a secure 6-digit reset code'
-            : 'Enter the verification code and choose a secure replacement password'}
+            : 'Check your email inbox and enter the 6-digit verification code below'}
         </p>
       </div>
 
@@ -145,11 +161,11 @@ export const ForgotPasswordPage: React.FC = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Generating Reset Code...</span>
+                    <span>Dispatching Verification Email...</span>
                   </>
                 ) : (
                   <>
-                    <span>Send Verification Code</span>
+                    <span>Send Verification Code to Email</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -164,30 +180,37 @@ export const ForgotPasswordPage: React.FC = () => {
             </form>
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-4">
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between text-xs text-slate-600">
-                <span>
-                  Resetting password for: <strong className="text-slate-800">{email}</strong>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setStep('request')}
-                  className="text-brand-600 hover:underline font-semibold text-[11px]"
-                >
-                  Change
-                </button>
-              </div>
-
-              {serverCode && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
-                  <div className="font-semibold mb-0.5">Verification Code Ready:</div>
-                  <div className="font-mono text-sm tracking-wider font-bold text-blue-900 bg-white inline-block px-2 py-0.5 rounded border border-blue-200">
-                    {serverCode}
-                  </div>
-                  <div className="text-[11px] text-blue-600 mt-1">
-                    (Code valid for 1 hour. It has been auto-filled for you below.)
+              {/* Inbox Notice Card */}
+              <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 text-blue-600 mt-0.5">
+                  <Inbox className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-slate-900">Code Dispatched to Inbox</div>
+                  <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                    We sent a 6-digit code to <strong className="text-blue-700">{email}</strong>. Please check your inbox and Spam folder.
+                  </p>
+                  <div className="mt-2 flex items-center space-x-3 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={handleResendCode}
+                      disabled={isResending}
+                      className="text-brand-600 hover:text-brand-700 font-bold inline-flex items-center space-x-1 disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${isResending ? 'animate-spin' : ''}`} />
+                      <span>{isResending ? 'Resending...' : 'Resend Code'}</span>
+                    </button>
+                    <span className="text-slate-300">•</span>
+                    <button
+                      type="button"
+                      onClick={() => setStep('request')}
+                      className="text-slate-500 hover:text-slate-700 underline"
+                    >
+                      Change Email
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
@@ -203,7 +226,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     maxLength={6}
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
+                    placeholder="Enter 6-digit code from email"
                     className="w-full pl-9 pr-3 py-2.5 text-xs font-mono tracking-widest rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                   />
                 </div>

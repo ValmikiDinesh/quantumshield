@@ -6,6 +6,7 @@ import { Organization, IOrganization, PLAN_LIMITS } from '../models/Organization
 import { AuditLog } from '../models/AuditLog';
 import { env } from '../config/env';
 import { AuthenticatedUser, UserDTO, OrganizationDTO } from '../types';
+import { EmailService } from './emailService';
 
 export class AuthService {
   public static async register(data: {
@@ -100,12 +101,14 @@ export class AuthService {
     };
   }
 
-  public static async forgotPassword(email: string): Promise<{ message: string; resetCode?: string }> {
+  public static async forgotPassword(email: string): Promise<{ message: string }> {
+    const genericSuccessMessage =
+      'If an account exists with that email address, a 6-digit verification code has been dispatched to your inbox.';
+
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
-      return {
-        message: 'If an account exists with that email, password reset instructions have been issued.',
-      };
+      // Prevents email enumeration
+      return { message: genericSuccessMessage };
     }
 
     // Generate secure 6-digit verification code
@@ -123,9 +126,12 @@ export class AuthService {
       metadata: { email: user.email },
     });
 
+    // Send code to user's email address via EmailService
+    await EmailService.sendPasswordResetEmail(user.email, resetCode);
+
+    // SECURITY: Never return resetCode in the API response or client payload
     return {
-      message: 'Password reset code generated successfully.',
-      resetCode,
+      message: genericSuccessMessage,
     };
   }
 

@@ -98,9 +98,17 @@ describe('QuantumShield API End-to-End Integration Tests', () => {
 
     expect(forgotRes.status).toBe(200);
     expect(forgotRes.body.success).toBe(true);
-    expect(forgotRes.body.data.resetCode).toBeDefined();
+    // Crucial security test: code must NOT be leaked in the client response
+    expect((forgotRes.body as any).resetCode).toBeUndefined();
+    if (forgotRes.body.data) {
+      expect((forgotRes.body.data as any).resetCode).toBeUndefined();
+    }
 
-    const resetCode = forgotRes.body.data.resetCode;
+    // Retrieve the code securely from the database as would happen via the received email
+    const user = await User.findOne({ email: 'test-valmiki-lead@example.com' });
+    expect(user).toBeDefined();
+    expect(user?.resetPasswordToken).toBeDefined();
+    const resetCode = user!.resetPasswordToken!;
 
     const resetRes = await request(app)
       .post('/api/auth/reset-password')

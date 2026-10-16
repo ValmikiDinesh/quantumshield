@@ -91,7 +91,7 @@ export const api = {
     }),
 
   forgotPassword: (email: string) =>
-    request<{ success: boolean; message: string; resetCode?: string }>('/auth/forgot-password', {
+    request<{ success: boolean; message: string }>('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     }),
