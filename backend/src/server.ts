@@ -1,6 +1,12 @@
+import dns from 'dns';
 import app from './app';
 import { env } from './config/env';
 import { connectDB } from './db/connection';
+
+// Force IPv4 DNS resolution first to prevent ENETUNREACH on cloud containers without IPv6 routes (Render, AWS)
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 async function bootstrap() {
   try {

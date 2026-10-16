@@ -1,4 +1,10 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
+
+// Force IPv4 lookup first across the process to prevent ENETUNREACH on Render/cloud containers
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 export class EmailService {
   private static transporter: nodemailer.Transporter | null = null;
@@ -20,20 +26,22 @@ export class EmailService {
         this.transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: { user, pass },
+          family: 4, // Force IPv4 to prevent ENETUNREACH on cloud containers
           connectionTimeout: 10000,
           greetingTimeout: 10000,
           socketTimeout: 10000,
-        });
+        } as any);
       } else {
         this.transporter = nodemailer.createTransport({
           host,
           port,
           secure: port === 465,
           auth: { user, pass },
+          family: 4, // Force IPv4 to prevent ENETUNREACH on cloud containers
           connectionTimeout: 10000,
           greetingTimeout: 10000,
           socketTimeout: 10000,
-        });
+        } as any);
       }
     }
 
