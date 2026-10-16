@@ -100,6 +100,70 @@ export class AuthService {
     };
   }
 
+  public static async forgotPassword(email: string): Promise<{ message: string; resetCode?: string }> {
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      return {
+        message: 'If an account exists with that email, password reset instructions have been issued.',
+      };
+    }
+
+    // Generate secure 6-digit verification code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordToken = resetCode;
+    user.resetPasswordExpires = new Date(Date.now() + 3600 * 1000); // 1 hour validity
+    await user.save();
+
+    await AuditLog.create({
+      organizationId: user.organizationId,
+      userId: user._id,
+      action: 'PASSWORD_RESET_REQUESTED',
+      targetType: 'User',
+      targetId: user._id.toString(),
+      metadata: { email: user.email },
+    });
+
+    return {
+      message: 'Password reset code generated successfully.',
+      resetCode,
+    };
+  }
+
+  public static async resetPassword(email: string, code: string, newPassword: string): Promise<{ message: string }> {
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+      resetPasswordToken: code.trim(),
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new Error('Invalid or expired password reset code. Please request a new one.');
+    }
+
+    if (newPassword.length < 8) {
+      throw new Error('New password must be at least 8 characters long.');
+    }
+
+    const salt = await bcrypt.genSalt(12);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    await AuditLog.create({
+      organizationId: user.organizationId,
+      userId: user._id,
+      action: 'PASSWORD_RESET_COMPLETED',
+      targetType: 'User',
+      targetId: user._id.toString(),
+      metadata: { email: user.email },
+    });
+
+    return {
+      message: 'Password has been successfully reset. Please log in with your new password.',
+    };
+  }
+
   public static generateToken(user: IUser, organizationId: string): string {
     const payload: AuthenticatedUser = {
       userId: user._id.toString(),

@@ -91,6 +91,41 @@ describe('QuantumShield API End-to-End Integration Tests', () => {
     expect(res.body.data.token).toBeDefined();
   });
 
+  it('POST /api/auth/forgot-password and /reset-password updates password successfully', async () => {
+    const forgotRes = await request(app)
+      .post('/api/auth/forgot-password')
+      .send({ email: 'test-valmiki-lead@example.com' });
+
+    expect(forgotRes.status).toBe(200);
+    expect(forgotRes.body.success).toBe(true);
+    expect(forgotRes.body.data.resetCode).toBeDefined();
+
+    const resetCode = forgotRes.body.data.resetCode;
+
+    const resetRes = await request(app)
+      .post('/api/auth/reset-password')
+      .send({
+        email: 'test-valmiki-lead@example.com',
+        code: resetCode,
+        newPassword: 'BrandNewSecurePassword456!',
+      });
+
+    expect(resetRes.status).toBe(200);
+    expect(resetRes.body.success).toBe(true);
+
+    // Verify authentication succeeds with the newly updated password
+    const loginRes = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'test-valmiki-lead@example.com',
+        password: 'BrandNewSecurePassword456!',
+      });
+
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body.success).toBe(true);
+    userToken = loginRes.body.data.token;
+  });
+
   it('GET /api/auth/me returns current user and organization profile', async () => {
     const res = await request(app)
       .get('/api/auth/me')

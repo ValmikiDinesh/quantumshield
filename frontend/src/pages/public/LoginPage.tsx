@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Shield, Lock, Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Shield, Lock, Mail, ArrowRight, Loader2, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,6 +15,7 @@ export const LoginPage: React.FC = () => {
   const location = useLocation();
 
   const isExpired = new URLSearchParams(location.search).get('expired') === 'true';
+  const successMessage = (location.state as any)?.message;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +61,13 @@ export const LoginPage: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4 sm:px-0">
         <div className="bg-white py-8 px-6 sm:px-8 rounded-2xl shadow-2xl border border-slate-200">
+          {successMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start space-x-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
           {isExpired && (
             <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
               Your session has expired. Please sign in again to continue.
@@ -93,21 +102,38 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Password
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-brand-600 hover:text-brand-500 hover:underline font-semibold"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full pl-9 pr-3 py-2.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  className="w-full pl-9 pr-10 py-2.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 

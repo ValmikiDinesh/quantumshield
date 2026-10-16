@@ -90,6 +90,18 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  forgotPassword: (email: string) =>
+    request<{ success: boolean; message: string; resetCode?: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (data: { email: string; code: string; newPassword: string }) =>
+    request<{ success: boolean; message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   getMe: () =>
     request<{ user: UserDTO; organization: OrganizationDTO }>('/auth/me'),
 

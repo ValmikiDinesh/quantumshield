@@ -7,6 +7,8 @@ export interface IUser extends Document {
   passwordHash: string;
   role: UserRole;
   organizationId: mongoose.Types.ObjectId;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +29,8 @@ const UserSchema: Schema = new Schema(
       required: true,
       index: true,
     },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );

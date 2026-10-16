@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LandingPage } from './pages/public/LandingPage';
 import { LoginPage } from './pages/public/LoginPage';
 import { RegisterPage } from './pages/public/RegisterPage';
+import { ForgotPasswordPage } from './pages/public/ForgotPasswordPage';
 import { DashboardPage } from './pages/app/DashboardPage';
 import { ProjectsPage } from './pages/app/ProjectsPage';
 import { ProjectDetailPage } from './pages/app/ProjectDetailPage';
@@ -60,6 +61,14 @@ export const App: React.FC = () => {
             element={
               <PublicOnlyRoute>
                 <RegisterPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicOnlyRoute>
+                <ForgotPasswordPage />
               </PublicOnlyRoute>
             }
           />

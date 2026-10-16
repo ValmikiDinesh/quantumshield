@@ -8,6 +8,8 @@ import {
   AuthController,
   registerSchema,
   loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '../controllers/authController';
 import {
   ProjectController,
@@ -65,6 +67,8 @@ router.get('/docs/openapi.json', (req, res) => {
 // Authentication endpoints
 router.post('/auth/register', authLimiter, validate(registerSchema), AuthController.register);
 router.post('/auth/login', authLimiter, validate(loginSchema), AuthController.login);
+router.post('/auth/forgot-password', authLimiter, validate(forgotPasswordSchema), AuthController.forgotPassword);
+router.post('/auth/reset-password', authLimiter, validate(resetPasswordSchema), AuthController.resetPassword);
 router.get('/auth/me', requireAuth, AuthController.me);
 router.post('/auth/logout', requireAuth, AuthController.logout);
 

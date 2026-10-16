@@ -19,6 +19,16 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+export const resetPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  code: z.string().min(1, 'Reset code is required'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+});
+
 export class AuthController {
   public static async register(req: Request, res: Response): Promise<void> {
     try {
@@ -54,6 +64,39 @@ export class AuthController {
       res.status(401).json({
         success: false,
         error: err.message || 'Login failed',
+      });
+    }
+  }
+
+  public static async forgotPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const result = await AuthService.forgotPassword(req.body.email);
+      res.status(200).json({
+        success: true,
+        data: result,
+        ...result,
+      });
+    } catch (err: any) {
+      res.status(400).json({
+        success: false,
+        error: err.message || 'Failed to process forgot password request',
+      });
+    }
+  }
+
+  public static async resetPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, code, newPassword } = req.body;
+      const result = await AuthService.resetPassword(email, code, newPassword);
+      res.status(200).json({
+        success: true,
+        data: result,
+        ...result,
+      });
+    } catch (err: any) {
+      res.status(400).json({
+        success: false,
+        error: err.message || 'Password reset failed',
       });
     }
   }
