@@ -162,13 +162,58 @@ export class EmailService {
         } else {
           const errData = await response.text();
           console.error('[EMAIL RESEND API ERROR]', errData);
+          // If Resend is in test mode, it only allows sending to the registered account email
+          if (errData.includes('resend.com/domains') || errData.includes('only send testing emails')) {
+            console.warn(
+              `[RESEND NOTE] Resend sandbox mode only delivers to your account email (${process.env.SMTP_USER || 'your account email'}). To send to any recipient, verify your domain at resend.com/domains or set BREVO_API_KEY.`
+            );
+          }
         }
       } catch (err) {
         console.error('[EMAIL RESEND FETCH ERROR]', err);
       }
     }
 
-    // 2. Fallback to standard SMTP (works on local machine or cloud environments permitting SMTP sockets)
+    // 2. If BREVO_API_KEY is configured, use Brevo HTTPS REST API (port 443 - allows sending to any recipient)
+    if (process.env.BREVO_API_KEY) {
+      try {
+        const senderEmail = process.env.BREVO_SENDER || process.env.SMTP_USER || 'quantumshieldsystem@gmail.com';
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': process.env.BREVO_API_KEY.trim(),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: {
+              name: 'QuantumShield Security',
+              email: senderEmail,
+            },
+            to: [{ email: toEmail }],
+            subject: `${resetCode} is your QuantumShield password reset code`,
+            htmlContent: htmlContent,
+          }),
+        });
+
+        if (response.ok) {
+          console.log(`[EMAIL DISPATCH] Successfully sent email to ${toEmail} via Brevo HTTPS API`);
+          return true;
+        } else {
+          const errData = await response.text();
+          console.error('[EMAIL BREVO API ERROR]', errData);
+        }
+      } catch (err) {
+        console.error('[EMAIL BREVO FETCH ERROR]', err);
+      }
+    }
+
+    // 3. Fallback to standard SMTP (only attempt if no cloud HTTPS API is configured, or in local dev)
+    if (process.env.RESEND_API_KEY || process.env.BREVO_API_KEY) {
+      // Avoid raw SMTP fallback in cloud when API keys are configured, since Render blocks SMTP ports
+      return false;
+    }
+
     const transporter = this.getTransporter();
     const fromAddress =
       process.env.EMAIL_FROM ||
@@ -176,7 +221,7 @@ export class EmailService {
 
     if (!transporter) {
       console.warn(
-        `[SECURITY WARNING] No SMTP or Resend credentials configured. Code for ${toEmail}: [${resetCode}]`
+        `[SECURITY WARNING] No SMTP or Resend/Brevo credentials configured. Code for ${toEmail}: [${resetCode}]`
       );
       return false;
     }
