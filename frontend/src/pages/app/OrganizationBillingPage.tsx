@@ -24,6 +24,9 @@ export const OrganizationBillingPage: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
+
   const loadOrg = async () => {
     setIsLoading(true);
     try {
@@ -39,6 +42,24 @@ export const OrganizationBillingPage: React.FC = () => {
   useEffect(() => {
     loadOrg();
   }, []);
+
+  const handleSaveName = async () => {
+    if (!newName.trim()) return;
+    setIsUpdating(true);
+    setMessage(null);
+    setError(null);
+    try {
+      await api.updateOrganization(newName.trim());
+      setMessage('Organization name successfully updated.');
+      setIsEditingName(false);
+      await refreshProfile();
+      await loadOrg();
+    } catch (err: any) {
+      setError(err.message || 'Failed to update organization name');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleUpdatePlan = async (tier: PlanTier) => {
     if (orgData?.plan === tier) return;
@@ -98,12 +119,46 @@ export const OrganizationBillingPage: React.FC = () => {
                       <Building className="w-6 h-6 text-blue-400" />
                     </div>
                     <div>
-                      <div className="flex items-center space-x-2">
-                        <h2 className="text-lg font-bold text-navy-950">{orgData.name}</h2>
-                        <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200">
-                          {orgData.plan} Tier
-                        </span>
-                      </div>
+                      {isEditingName ? (
+                        <div className="flex items-center space-x-2 mt-1">
+                          <input
+                            type="text"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            className="px-2.5 py-1 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold text-navy-950"
+                            placeholder="Organization Name"
+                          />
+                          <button
+                            onClick={handleSaveName}
+                            disabled={isUpdating}
+                            className="px-3 py-1 bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold rounded-lg shadow-sm"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setIsEditingName(false)}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <h2 className="text-lg font-bold text-navy-950">{orgData.name}</h2>
+                          <button
+                            onClick={() => {
+                              setNewName(orgData.name);
+                              setIsEditingName(true);
+                            }}
+                            className="text-[11px] text-brand-600 hover:underline font-semibold"
+                          >
+                            Edit Name
+                          </button>
+                          <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200">
+                            {orgData.plan} Tier
+                          </span>
+                        </div>
+                      )}
                       <p className="text-xs text-slate-500 mt-0.5">
                         Organization Slug: <span className="font-mono">{orgData.slug}</span> • Member since {new Date(orgData.createdAt).toLocaleDateString()}
                       </p>

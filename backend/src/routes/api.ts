@@ -101,6 +101,7 @@ router.get('/dashboard/stats', requireAuth, DashboardController.getStats);
 
 // Organization & Plan
 router.get('/organizations/current', requireAuth, OrganizationController.getCurrent);
+router.patch('/organizations/current', requireAuth, OrganizationController.updateProfile);
 router.patch('/organizations/current/plan', requireAuth, validate(updatePlanSchema), OrganizationController.updatePlan);
 
 export default router;

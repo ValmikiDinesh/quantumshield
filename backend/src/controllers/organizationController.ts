@@ -119,4 +119,37 @@ export class OrganizationController {
       res.status(500).json({ success: false, error: err.message });
     }
   }
+
+  public static async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const orgId = req.user!.organizationId;
+      const { name } = req.body as { name: string };
+      if (!name || !name.trim()) {
+        res.status(400).json({ success: false, error: 'Organization name is required' });
+        return;
+      }
+
+      const org = await Organization.findById(orgId);
+      if (!org) {
+        res.status(404).json({ success: false, error: 'Organization not found' });
+        return;
+      }
+
+      org.name = name.trim();
+      await org.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'Organization name successfully updated',
+        data: {
+          id: org._id.toString(),
+          name: org.name,
+          slug: org.slug,
+          plan: org.plan,
+        },
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
 }

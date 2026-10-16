@@ -214,4 +214,10 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ plan }),
     }),
+
+  updateOrganization: (name: string) =>
+    request<{ success: boolean; data: any }>('/organizations/current', {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    }),
 };
