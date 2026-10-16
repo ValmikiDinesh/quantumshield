@@ -56,18 +56,6 @@ export class EmailService {
       return true;
     }
 
-    const transporter = this.getTransporter();
-    const fromAddress =
-      process.env.EMAIL_FROM ||
-      (process.env.SMTP_USER ? `"QuantumShield Security" <${process.env.SMTP_USER}>` : '"QuantumShield Security" <quantumshieldsystem@gmail.com>');
-
-    if (!transporter) {
-      console.warn(
-        `[SECURITY WARNING] SMTP credentials not configured in environment variables (SMTP_USER/SMTP_PASS).`
-      );
-      return false;
-    }
-
     const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -149,6 +137,49 @@ export class EmailService {
 </body>
 </html>
 `;
+
+    // 1. If RESEND_API_KEY is configured, use Resend HTTPS REST API (port 443 - never blocked by cloud firewalls)
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const fromEmail = process.env.RESEND_FROM || 'QuantumShield <onboarding@resend.dev>';
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: fromEmail,
+            to: [toEmail],
+            subject: `${resetCode} is your QuantumShield password reset code`,
+            html: htmlContent,
+          }),
+        });
+
+        if (response.ok) {
+          console.log(`[EMAIL DISPATCH] Successfully sent email to ${toEmail} via Resend HTTPS API`);
+          return true;
+        } else {
+          const errData = await response.text();
+          console.error('[EMAIL RESEND API ERROR]', errData);
+        }
+      } catch (err) {
+        console.error('[EMAIL RESEND FETCH ERROR]', err);
+      }
+    }
+
+    // 2. Fallback to standard SMTP (works on local machine or cloud environments permitting SMTP sockets)
+    const transporter = this.getTransporter();
+    const fromAddress =
+      process.env.EMAIL_FROM ||
+      (process.env.SMTP_USER ? `"QuantumShield Security" <${process.env.SMTP_USER}>` : '"QuantumShield Security" <quantumshieldsystem@gmail.com>');
+
+    if (!transporter) {
+      console.warn(
+        `[SECURITY WARNING] No SMTP or Resend credentials configured. Code for ${toEmail}: [${resetCode}]`
+      );
+      return false;
+    }
 
     try {
       await transporter.sendMail({
