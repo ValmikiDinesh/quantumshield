@@ -126,8 +126,10 @@ export class AuthService {
       metadata: { email: user.email },
     });
 
-    // Send code to user's email address via EmailService
-    await EmailService.sendPasswordResetEmail(user.email, resetCode);
+    // Send code to user's email address via EmailService in background (non-blocking)
+    EmailService.sendPasswordResetEmail(user.email, resetCode).catch((err) => {
+      console.error('[EMAIL BACKGROUND DISPATCH ERROR]', err);
+    });
 
     // SECURITY: Never return resetCode in the API response or client payload
     return {

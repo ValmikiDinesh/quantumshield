@@ -4,29 +4,46 @@ export class EmailService {
   private static transporter: nodemailer.Transporter | null = null;
 
   private static getTransporter(): nodemailer.Transporter | null {
-    const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-    const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+    const user = (process.env.SMTP_USER || process.env.EMAIL_USER || '').trim();
+    // Auto-strip spaces in case user pasted Google app password with spaces ('abcd efgh ...')
+    const pass = (process.env.SMTP_PASS || process.env.EMAIL_PASS || '').replace(/\s+/g, '');
     const host = process.env.SMTP_HOST || (user && user.endsWith('@gmail.com') ? 'smtp.gmail.com' : undefined);
-    const port = parseInt(process.env.SMTP_PORT || '465', 10);
-    const secure = port === 465;
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
 
-    if (!user || !pass || !host) {
+    if (!user || !pass) {
       return null;
     }
 
     if (!this.transporter) {
-      this.transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure,
-        auth: { user, pass },
-      });
+      const isGmail = user.endsWith('@gmail.com') || host === 'smtp.gmail.com';
+      if (isGmail) {
+        this.transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: { user, pass },
+          connectionTimeout: 10000,
+          greetingTimeout: 10000,
+          socketTimeout: 10000,
+        });
+      } else {
+        this.transporter = nodemailer.createTransport({
+          host,
+          port,
+          secure: port === 465,
+          auth: { user, pass },
+          connectionTimeout: 10000,
+          greetingTimeout: 10000,
+          socketTimeout: 10000,
+        });
+      }
     }
 
     return this.transporter;
   }
 
   public static async sendPasswordResetEmail(toEmail: string, resetCode: string): Promise<boolean> {
+    // Always log to secure server stdout for observability and admin tracking
+    console.log(`[VERIFICATION CODE DISPATCH] 📬 6-Digit code for ${toEmail}: [${resetCode}]`);
+
     if (process.env.NODE_ENV === 'test') {
       return true;
     }
@@ -34,13 +51,11 @@ export class EmailService {
     const transporter = this.getTransporter();
     const fromAddress =
       process.env.EMAIL_FROM ||
-      (process.env.SMTP_USER ? `"QuantumShield Security" <${process.env.SMTP_USER}>` : '"QuantumShield Security" <no-reply@quantumshield.in>');
+      (process.env.SMTP_USER ? `"QuantumShield Security" <${process.env.SMTP_USER}>` : '"QuantumShield Security" <quantumshieldsystem@gmail.com>');
 
     if (!transporter) {
-      // In production or test when SMTP is not configured in environment variables,
-      // log to secure server stdout only — NEVER exposed to the frontend or API response.
       console.warn(
-        `[SECURITY WARNING] SMTP credentials not configured in environment variables (SMTP_USER/SMTP_PASS). Server generated reset code for ${toEmail}: [${resetCode}]`
+        `[SECURITY WARNING] SMTP credentials not configured in environment variables (SMTP_USER/SMTP_PASS).`
       );
       return false;
     }
