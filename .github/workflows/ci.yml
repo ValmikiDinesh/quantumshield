@@ -1,0 +1,55 @@
+name: QuantumShield CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Root Dependencies
+        run: npm install
+
+      - name: Install Backend Dependencies
+        run: cd backend && npm ci
+
+      - name: Install Frontend Dependencies
+        run: cd frontend && npm ci
+
+      - name: Run Backend Unit & Integration Tests
+        run: cd backend && npm test
+        env:
+          MONGODB_URI: mongodb://localhost:27017/quantumshield_ci_test
+          JWT_SECRET: ci_test_super_secret_jwt_key_12345
+
+      - name: Run Frontend Tests
+        run: cd frontend && npm test
+
+      - name: Build Backend Distribution
+        run: cd backend && npm run build
+
+      - name: Build Frontend Distribution
+        run: cd frontend && npm run build
