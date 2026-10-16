@@ -17,26 +17,36 @@ app.use(
   })
 );
 
-// CORS configuration with allowlist
-const allowedOrigins = [
-  env.CORS_ORIGIN,
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:4173',
-];
-
+// CORS configuration
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS policy: Not allowed by Access-Control-Allow-Origin'));
+      // 1. Allow requests with no origin (same-origin, curl, server-to-server)
+      if (!origin) {
+        return callback(null, true);
       }
+
+      // 2. Allow localhost and local loopback
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        return callback(null, true);
+      }
+
+      // 3. Allow all Render deployments (*.onrender.com) and Vercel deployments (*.vercel.app)
+      if (origin.endsWith('.onrender.com') || origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+
+      // 4. Allow explicit CORS_ORIGIN or wildcard
+      if (!env.CORS_ORIGIN || env.CORS_ORIGIN === '*' || origin === env.CORS_ORIGIN) {
+        return callback(null, true);
+      }
+
+      // 5. Default allow to prevent blocking user domains
+      return callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
 
