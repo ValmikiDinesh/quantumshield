@@ -130,16 +130,18 @@ export const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Demo account quick fill button */}
-          <div className="mt-5 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={fillDemoCredentials}
-              className="w-full text-center py-2 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200 transition-colors"
-            >
-              Fill Demo Credentials (test-valmiki-lead@example.com)
-            </button>
-          </div>
+          {/* Demo account quick fill button (Only visible in local development, completely hidden in production) */}
+          {Boolean((import.meta as any).env?.DEV) && (
+            <div className="mt-5 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={fillDemoCredentials}
+                className="w-full text-center py-2 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200 transition-colors"
+              >
+                Fill Demo Credentials (test-valmiki-lead@example.com)
+              </button>
+            </div>
+          )}
 
           <div className="mt-5 text-center text-xs text-slate-500">
             Don't have an account?{' '}
