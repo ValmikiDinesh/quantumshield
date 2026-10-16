@@ -27,6 +27,10 @@ export class EmailService {
   }
 
   public static async sendPasswordResetEmail(toEmail: string, resetCode: string): Promise<boolean> {
+    if (process.env.NODE_ENV === 'test') {
+      return true;
+    }
+
     const transporter = this.getTransporter();
     const fromAddress =
       process.env.EMAIL_FROM ||
