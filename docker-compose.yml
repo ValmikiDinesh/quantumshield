@@ -24,6 +24,7 @@ services:
     container_name: quantumshield-backend
     restart: unless-stopped
     ports:
+      - "80:5001"
       - "5001:5001"
     environment:
       - PORT=5001
