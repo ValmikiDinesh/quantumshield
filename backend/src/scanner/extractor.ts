@@ -11,9 +11,9 @@ export interface ExtractionLimits {
 }
 
 export const DEFAULT_EXTRACTION_LIMITS: ExtractionLimits = {
-  maxFiles: 1000,
-  maxTotalBytes: 50 * 1024 * 1024, // 50MB
-  maxFileSizeBytes: 5 * 1024 * 1024, // 5MB
+  maxFiles: 10000,
+  maxTotalBytes: 500 * 1024 * 1024, // 500MB
+  maxFileSizeBytes: 50 * 1024 * 1024, // 50MB
 };
 
 const SUPPORTED_EXTENSIONS = new Set([

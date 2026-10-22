@@ -12,7 +12,7 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default('24h'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   GEMINI_API_KEY: z.string().optional(),
-  MAX_UPLOAD_SIZE_MB: z.string().default('25'),
+  MAX_UPLOAD_SIZE_MB: z.string().default('250'),
 });
 
 const parsed = envSchema.safeParse(process.env);

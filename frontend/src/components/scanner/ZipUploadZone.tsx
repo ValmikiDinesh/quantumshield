@@ -102,8 +102,8 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
       setError('Only .zip archives containing repository source code are supported.');
       return;
     }
-    if (file.size > 25 * 1024 * 1024) {
-      setError('Archive exceeds the 25MB maximum upload limit. Please exclude heavy folders like node_modules/ and .git/ before zipping.');
+    if (file.size > 250 * 1024 * 1024) {
+      setError('Archive exceeds the 250MB maximum upload limit. Please exclude heavy folders like node_modules/ and .git/ before zipping.');
       return;
     }
     setSelectedFile(file);
@@ -184,7 +184,7 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
             <span>{showGuide ? 'Hide Zip Guide' : 'Zip Packaging Guide'}</span>
           </button>
           <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200/60 px-2.5 py-1 rounded-lg">
-            Max 25MB • ZIP
+            Max 250MB • ZIP
           </span>
         </div>
       </div>
