@@ -272,9 +272,9 @@ export class ScanController {
       await AuditLog.create({
         organizationId: orgId,
         userId: req.user!.userId,
-        action: 'scan.completed',
-        resourceType: 'scan',
-        resourceId: scan._id.toString(),
+        action: 'SCAN_COMPLETED',
+        targetType: 'Scan',
+        targetId: scan._id.toString(),
         metadata: {
           projectId: project._id.toString(),
           source: 'github',
