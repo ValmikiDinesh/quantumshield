@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, FileArchive, CheckCircle2, AlertCircle, Loader2, Sparkles, ShieldAlert, Info, Copy, Check } from 'lucide-react';
+import { UploadCloud, FileArchive, CheckCircle2, AlertCircle, Loader2, Sparkles, ShieldAlert, Info, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { api } from '../../api/client';
 import { ScanDetailDTO } from '../../types';
 
@@ -9,6 +9,59 @@ interface Props {
   onScanCompleted: (scan: ScanDetailDTO) => void;
 }
 
+const LANGUAGE_GUIDE = [
+  {
+    lang: 'JavaScript / TypeScript',
+    tag: 'npm / yarn / pnpm',
+    exclude: 'node_modules/, dist/, .yarn/',
+    manifests: 'package.json, package-lock.json, pnpm-lock.yaml',
+  },
+  {
+    lang: 'Python',
+    tag: 'pip / venv / poetry',
+    exclude: '.venv/, venv/, env/, __pycache__/',
+    manifests: 'requirements.txt, Pipfile, pyproject.toml',
+  },
+  {
+    lang: 'Java / Kotlin / JVM',
+    tag: 'Maven / Gradle',
+    exclude: 'target/, build/, .gradle/',
+    manifests: 'pom.xml, build.gradle, build.gradle.kts',
+  },
+  {
+    lang: 'Rust',
+    tag: 'Cargo',
+    exclude: 'target/',
+    manifests: 'Cargo.toml, Cargo.lock',
+  },
+  {
+    lang: 'Go (Golang)',
+    tag: 'Go Modules',
+    exclude: 'bin/, vendor/',
+    manifests: 'go.mod, go.sum',
+  },
+  {
+    lang: 'PHP',
+    tag: 'Composer',
+    exclude: 'vendor/',
+    manifests: 'composer.json, composer.lock',
+  },
+  {
+    lang: 'C / C++ & C#',
+    tag: 'CMake / .NET',
+    exclude: 'bin/, obj/, out/',
+    manifests: 'CMakeLists.txt, *.csproj',
+  },
+  {
+    lang: 'All Projects',
+    tag: 'Git Version Control',
+    exclude: '.git/',
+    manifests: 'All source code files & configs',
+  },
+];
+
+const UNIVERSAL_ZIP_CMD = 'zip -r project.zip . -x "node_modules/*" "dist/*" ".yarn/*" ".venv/*" "venv/*" "env/*" "__pycache__/*" "vendor/*" "target/*" "build/*" ".gradle/*" "bin/*" ".git/*"';
+
 export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanCompleted }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -16,6 +69,7 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
   const [scanStep, setScanStep] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [copiedCmd, setCopiedCmd] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -121,34 +175,38 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
         </div>
       </div>
 
-      {/* Optimization Notice: Exclude node_modules / build artifacts */}
-      <div className="mb-4 p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-amber-900 text-xs">
-        <div className="flex items-start space-x-2.5">
+      {/* Optimization Notice: Universal Exclude Guide for All Supported Languages */}
+      <div className="mb-4 p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 text-amber-900 text-xs shadow-xs">
+        <div className="flex items-start space-x-3">
           <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="flex-1">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <span className="font-semibold text-amber-950">
-                Important: Zip your project without <code className="bg-amber-100/90 text-amber-900 px-1 py-0.5 rounded font-mono font-bold">node_modules</code>
+              <span className="font-bold text-amber-950 text-sm">
+                Important: Exclude dependency &amp; build folders before zipping
               </span>
-              <span className="text-[10px] bg-amber-200/80 text-amber-900 font-semibold px-2 py-0.5 rounded-full">
-                Saves Memory & Accelerates Scans
+              <span className="text-[10px] bg-amber-200/80 text-amber-950 font-semibold px-2 py-0.5 rounded-full">
+                Supported: JS/TS, Python, Java, Go, Rust, PHP, C/C++, C#
               </span>
             </div>
-            <p className="text-amber-800/90 leading-relaxed text-[11px] mt-1">
-              Dependency folders (<code className="font-mono text-amber-950">node_modules/</code>, <code className="font-mono text-amber-950">vendor/</code>, <code className="font-mono text-amber-950">.git/</code>, <code className="font-mono text-amber-950">dist/</code>) contain thousands of files that consume high memory, bloat file sizes, and exceed security limits. QuantumShield scans your source code and manifests (<code className="font-mono text-amber-950">package.json</code>, <code className="font-mono text-amber-950">pom.xml</code>) directly, so omitting them keeps your ZIP small (&lt;5MB) and scans lightning-fast.
+            <p className="text-amber-800/90 leading-relaxed text-[11px] mt-1.5">
+              Heavy dependency and build directories (<code className="font-mono text-amber-950">node_modules</code>, <code className="font-mono text-amber-950">.venv</code>, <code className="font-mono text-amber-950">target</code>, <code className="font-mono text-amber-950">vendor</code>, <code className="font-mono text-amber-950">build</code>, <code className="font-mono text-amber-950">.git</code>) consume massive memory and cause upload timeouts. QuantumShield scans your source code and manifests (<code className="font-mono text-amber-950">package.json</code>, <code className="font-mono text-amber-950">requirements.txt</code>, <code className="font-mono text-amber-950">pom.xml</code>, <code className="font-mono text-amber-950">go.mod</code>, <code className="font-mono text-amber-950">Cargo.toml</code>, <code className="font-mono text-amber-950">composer.json</code>) directly, so omitting them keeps archives &lt;5MB and scans lightning-fast.
             </p>
-            <div className="mt-2 pt-2 border-t border-amber-200/60 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center space-x-1.5 text-[11px] text-amber-950 font-mono">
-                <span className="font-sans text-[10px] text-amber-700 font-semibold uppercase tracking-wider">Terminal command:</span>
-                <code className="bg-white/90 border border-amber-300/80 px-2 py-0.5 rounded text-amber-950 select-all font-bold">
-                  zip -r project.zip . -x "node_modules/*" ".git/*" "dist/*"
+
+            {/* Universal Command Box */}
+            <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex-1 overflow-x-auto">
+                <span className="font-sans text-[10px] text-amber-700 font-semibold uppercase tracking-wider block mb-1">
+                  Universal Zip Command (All Languages):
+                </span>
+                <code className="bg-white/90 border border-amber-300/80 px-2.5 py-1 rounded text-amber-950 select-all font-bold font-mono text-[11px] block whitespace-nowrap overflow-x-auto">
+                  {UNIVERSAL_ZIP_CMD}
                 </code>
               </div>
               <button
                 type="button"
-                onClick={() => copyCommand('zip -r project.zip . -x "node_modules/*" ".git/*" "dist/*"')}
-                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded bg-amber-100 hover:bg-amber-200/80 text-amber-900 text-[11px] font-medium transition-colors cursor-pointer"
-                title="Copy terminal command"
+                onClick={() => copyCommand(UNIVERSAL_ZIP_CMD)}
+                className="inline-flex items-center justify-center space-x-1 px-3 py-1.5 rounded-lg bg-amber-200/70 hover:bg-amber-300/80 text-amber-950 text-xs font-semibold transition-colors cursor-pointer self-start sm:self-end shrink-0"
+                title="Copy universal zip command"
               >
                 {copiedCmd ? (
                   <>
@@ -157,11 +215,44 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-amber-800" />
+                    <Copy className="w-3.5 h-3.5 text-amber-900" />
                     <span>Copy Command</span>
                   </>
                 )}
               </button>
+            </div>
+
+            {/* Toggle per-language guide */}
+            <div className="mt-2.5 pt-2 border-t border-amber-200/50">
+              <button
+                type="button"
+                onClick={() => setShowGuide(!showGuide)}
+                className="inline-flex items-center space-x-1 text-[11px] font-semibold text-amber-900 hover:text-amber-950 underline decoration-amber-400 hover:decoration-amber-700 cursor-pointer"
+              >
+                <span>{showGuide ? 'Hide language-specific breakdown' : 'View language-specific folders to exclude (Python, Java, Go, Rust, PHP...)'}</span>
+                {showGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+
+              {showGuide && (
+                <div className="mt-2.5 grid grid-cols-1 md:grid-cols-2 gap-2 bg-white/70 p-2.5 rounded-lg border border-amber-200/70">
+                  {LANGUAGE_GUIDE.map(item => (
+                    <div key={item.lang} className="p-2 rounded bg-white/90 border border-amber-100 text-[11px]">
+                      <div className="flex items-center justify-between font-semibold text-slate-800">
+                        <span>{item.lang}</span>
+                        <span className="text-[10px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.2 rounded">{item.tag}</span>
+                      </div>
+                      <div className="mt-1 text-slate-600">
+                        <span className="text-red-700 font-medium">Exclude: </span>
+                        <code className="bg-red-50 text-red-800 px-1 py-0.2 rounded font-mono text-[10px]">{item.exclude}</code>
+                      </div>
+                      <div className="mt-0.5 text-slate-600">
+                        <span className="text-emerald-700 font-medium">Keep Manifests: </span>
+                        <span className="text-slate-500 text-[10px]">{item.manifests}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -219,11 +310,11 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
               Drag and drop your repository .ZIP file here
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              or click to browse local files (Supports JS/TS, Python, Java, Go, Rust, PHP, manifests)
+              or click to browse local files (Supports JS/TS, Python, Java, Go, Rust, PHP, C/C++, C# & manifests)
             </p>
-            <p className="text-[11px] text-amber-700 font-medium mt-1.5 flex items-center justify-center gap-1">
-              <span>⚠️</span>
-              <span>Exclude <code className="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-mono">node_modules</code> and <code className="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-mono">.git</code> for instant processing</span>
+            <p className="text-[11px] text-amber-700 font-medium mt-1.5 flex items-center justify-center gap-1 flex-wrap">
+              <span>⚡</span>
+              <span>Exclude dependencies (<code className="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-mono">node_modules</code>, <code className="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-mono">venv</code>, <code className="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-mono">target</code>, <code className="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-mono">vendor</code>, <code className="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-mono">build</code>, <code className="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-mono">.git</code>) for instant scans</span>
             </p>
           </div>
         )}

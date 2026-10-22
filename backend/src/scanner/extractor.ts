@@ -37,7 +37,8 @@ const SUPPORTED_EXACT_NAMES = new Set([
 ]);
 
 const IGNORED_DIRECTORIES = new Set([
-  'node_modules', '.git', 'dist', 'build', 'out', 'target', '.idea', '.vscode', '__pycache__', 'vendor'
+  'node_modules', '.git', 'dist', 'build', 'out', 'target', '.idea', '.vscode', '__pycache__', 'vendor',
+  '.venv', 'venv', 'env', '.yarn', '.gradle', 'bin'
 ]);
 
 const IGNORED_BINARY_EXTENSIONS = new Set([
@@ -74,7 +75,7 @@ export class SafeZipExtractor {
 
     if (totalEntriesCount > limits.maxFiles) {
       throw new Error(
-        `Security Limit Exceeded: ZIP contains ${totalEntriesCount} entries, exceeding maximum allowed limit of ${limits.maxFiles}. Please exclude dependency directories like "node_modules/" and ".git/" before creating your ZIP archive.`
+        `Security Limit Exceeded: ZIP contains ${totalEntriesCount} entries, exceeding maximum allowed limit of ${limits.maxFiles}. Please exclude dependency directories like "node_modules/", "venv/", "target/", "vendor/", "build/", or ".git/" before creating your ZIP archive.`
       );
     }
 
