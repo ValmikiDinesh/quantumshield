@@ -26,6 +26,13 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+export const formatScanDateTime = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return `${d.toLocaleDateString()} at ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+};
+
 export const ScanComparePage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const initialScanA = searchParams.get('scanAId') || '';
@@ -133,10 +140,11 @@ export const ScanComparePage: React.FC = () => {
 
   const copyDiffSummary = () => {
     if (!comparison) return;
+    const deltaSign = comparison.scoreDelta > 0 ? `+${comparison.scoreDelta}` : `${comparison.scoreDelta}`;
     const summaryMarkdown = `### QuantumShield Cryptographic Scan Diff
-- **Baseline Scan (A)**: ${comparison.scanA.uploadedFileName} (Score: ${comparison.scanA.readinessScore}/100)
-- **Target Scan (B)**: ${comparison.scanB.uploadedFileName} (Score: ${comparison.scanB.readinessScore}/100)
-- **Readiness Delta**: ${comparison.scoreDelta > 0 ? `+${comparison.scoreDelta}` : comparison.scoreDelta} points
+- **Baseline Scan (A)**: ${comparison.scanA.uploadedFileName} (${formatScanDateTime(comparison.scanA.createdAt)}, Score: ${comparison.scanA.readinessScore}/100)
+- **Target Scan (B)**: ${comparison.scanB.uploadedFileName} (${formatScanDateTime(comparison.scanB.createdAt)}, Score: ${comparison.scanB.readinessScore}/100)
+- **Readiness Delta**: ${deltaSign} points
 - **New Findings Introduced**: ${comparison.newFindings.length}
 - **Resolved Findings Fixed**: ${comparison.resolvedFindings.length}
 - **Unchanged Findings**: ${comparison.unchangedFindings.length}`;
@@ -197,7 +205,7 @@ export const ScanComparePage: React.FC = () => {
                   <option value="">Select Baseline Scan</option>
                   {projectScans.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {new Date(s.createdAt).toLocaleDateString()} — Score: {s.readinessScore} ({s.uploadedFileName})
+                      {formatScanDateTime(s.createdAt)} — Score: {s.readinessScore} ({s.uploadedFileName})
                     </option>
                   ))}
                 </select>
@@ -213,7 +221,7 @@ export const ScanComparePage: React.FC = () => {
                   <option value="">Select Target Scan</option>
                   {projectScans.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {new Date(s.createdAt).toLocaleDateString()} — Score: {s.readinessScore} ({s.uploadedFileName})
+                      {formatScanDateTime(s.createdAt)} — Score: {s.readinessScore} ({s.uploadedFileName})
                     </option>
                   ))}
                 </select>
@@ -268,7 +276,7 @@ export const ScanComparePage: React.FC = () => {
                     <p className="text-2xl font-extrabold text-navy-950 mt-1">{comparison.scanA.readinessScore} / 100</p>
                     <p className="text-xs text-slate-500 mt-0.5">{comparison.scanA.riskLevel}</p>
                     <p className="text-[11px] text-slate-400 font-mono mt-1">
-                      {new Date(comparison.scanA.createdAt).toLocaleDateString()} • {comparison.scanA.findingsCount} findings
+                      {formatScanDateTime(comparison.scanA.createdAt)} • {comparison.scanA.findingsCount} findings
                     </p>
                   </div>
 
@@ -302,7 +310,7 @@ export const ScanComparePage: React.FC = () => {
                     <p className="text-2xl font-extrabold text-navy-950 mt-1">{comparison.scanB.readinessScore} / 100</p>
                     <p className="text-xs text-slate-500 mt-0.5">{comparison.scanB.riskLevel}</p>
                     <p className="text-[11px] text-slate-400 font-mono mt-1">
-                      {new Date(comparison.scanB.createdAt).toLocaleDateString()} • {comparison.scanB.findingsCount} findings
+                      {formatScanDateTime(comparison.scanB.createdAt)} • {comparison.scanB.findingsCount} findings
                     </p>
                   </div>
                 </div>

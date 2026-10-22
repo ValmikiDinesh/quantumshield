@@ -140,7 +140,7 @@ export const ScanDetailPage: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0">
         <Header
           title="Scan Findings & PQC Readiness Explorer"
-          subtitle={`Archive: ${scan?.uploadedFileName || '...'} • Rules v${scan?.rulesVersion || '2024.1'}`}
+          subtitle={`Archive: ${scan?.uploadedFileName || '...'} • Scanned: ${scan?.createdAt ? new Date(scan.createdAt).toLocaleDateString() + ' at ' + new Date(scan.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '...'} • Rules v${scan?.rulesVersion || '2024.1'}`}
         />
 
         <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
