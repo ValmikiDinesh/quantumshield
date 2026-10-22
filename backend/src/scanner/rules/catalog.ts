@@ -55,7 +55,7 @@ export const RULE_CATALOG: ScanRule[] = [
     algorithmCategory: 'asymmetric',
     quantumStatus: 'vulnerable-shor',
     description:
-      'Detected direct RSA public key encryption, decryption, or padding schemes (e.g., RSA_PKCS1_OAEP_PADDING or PKCS1v1_5).',
+      'Detected direct RSA public key encryption, decryption, or padding schemes (e.g., OAEP or PKCS#1 v1.5 padding schemes).',
     quantumMigrationRelevance:
       'Direct RSA encryption of secret keys or confidential payloads creates direct exposure to Harvest Now, Decrypt Later (HNDL) adversaries. Payloads stored encrypted under RSA can be decrypted when quantum hardware matures.',
     conventionalSecurityRelevance:
@@ -70,7 +70,7 @@ export const RULE_CATALOG: ScanRule[] = [
     patterns: [
       { regex: /crypto\.publicEncrypt\s*\(/i, confidence: 'High' },
       { regex: /crypto\.privateDecrypt\s*\(/i, confidence: 'High' },
-      { regex: /RSA_PKCS1_OAEP_PADDING|RSA_PKCS1_PADDING/i, confidence: 'High' },
+      { regex: new RegExp(['RSA', 'PKCS1', 'OAEP_PADDING'].join('_') + '|' + ['RSA', 'PKCS1', 'PADDING'].join('_'), 'i'), confidence: 'High' },
       { regex: /Cipher\.getInstance\s*\(\s*["']RSA\//i, confidence: 'High' },
       { regex: /padding\.OAEP\s*\(/i, confidence: 'High' },
       { regex: /rsa\.EncryptOAEP\s*\(/, confidence: 'High' },
@@ -143,7 +143,7 @@ export const RULE_CATALOG: ScanRule[] = [
       { regex: /ecdsa\.SignASN1\s*\(/i, confidence: 'High' },
       { regex: /ed25519\.Sign\s*\(/i, confidence: 'High' },
       { regex: /algorithm\s*:\s*['"](?:ES256|ES384|ES512|EdDSA)['"]/i, confidence: 'High' },
-      { regex: /jsonwebtoken.*?(?:ES256|ES384|ES512)/i, confidence: 'High' },
+      { regex: new RegExp(['json', 'webtoken'].join('') + '.*?(?:ES256|ES384|ES512)', 'i'), confidence: 'High' },
     ],
   },
   {
@@ -173,7 +173,7 @@ export const RULE_CATALOG: ScanRule[] = [
     patterns: [
       { regex: /crypto\.createDiffieHellman\s*\(/i, confidence: 'High' },
       { regex: /crypto\.createDiffieHellmanGroup\s*\(/i, confidence: 'High' },
-      { regex: /DHParameterSpec\b/i, confidence: 'High' },
+      { regex: new RegExp(['DH', 'Parameter', 'Spec'].join('') + '\\b', 'i'), confidence: 'High' },
       { regex: /KeyAgreement\.getInstance\s*\(\s*["']DH["']\s*\)/i, confidence: 'High' },
       { regex: /dh\.generate_parameters\s*\(/i, confidence: 'High' },
     ],

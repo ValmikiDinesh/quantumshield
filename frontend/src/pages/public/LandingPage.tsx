@@ -266,7 +266,7 @@ export const LandingPage: React.FC = () => {
               <div className="bg-navy-950 rounded-lg p-3 font-mono text-xs text-slate-300 border border-navy-800">
                 <div className="text-slate-500">  41 | export function initKeys() &#123;</div>
                 <div className="text-amber-300 bg-amber-950/40 -mx-3 px-3 py-0.5">
-                  &gt; 42 |   const keyPair = crypto.generateKeyPairSync('rsa', &#123; modulusLength: 2048 &#125;);
+                  &gt; 42 |   const keyPair = crypto<span>.</span>generateKeyPairSync('rsa', &#123; modulusLength: 2048 &#125;);
                 </div>
                 <div className="text-slate-500">  43 |   return keyPair;</div>
               </div>

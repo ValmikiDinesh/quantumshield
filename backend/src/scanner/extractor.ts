@@ -38,7 +38,9 @@ const SUPPORTED_EXACT_NAMES = new Set([
 
 const IGNORED_DIRECTORIES = new Set([
   'node_modules', '.git', 'dist', 'build', 'out', 'target', '.idea', '.vscode', '__pycache__', 'vendor',
-  '.venv', 'venv', 'env', '.yarn', '.gradle', 'bin'
+  '.venv', 'venv', 'env', '.yarn', '.gradle', 'bin',
+  // Exclude test suites, mocks, and fixtures from production cryptographic assessment (standard SAST practice)
+  '__tests__', 'test', 'tests', 'spec', 'specs', '__mocks__', 'fixtures', 'test-fixtures'
 ]);
 
 const IGNORED_BINARY_EXTENSIONS = new Set([
@@ -116,6 +118,16 @@ export class SafeZipExtractor {
 
       // Check if it's a known binary file
       if (IGNORED_BINARY_EXTENSIONS.has(ext)) {
+        ignoredCount++;
+        continue;
+      }
+
+      // Check if file is a test/spec file (standard SAST exclusion)
+      const isTestFile =
+        /\.(test|spec)\.[a-zA-Z0-9]+$/i.test(fileName) ||
+        /^test_.*\.py$/i.test(fileName) ||
+        /.*_test\.go$/i.test(fileName);
+      if (isTestFile) {
         ignoredCount++;
         continue;
       }

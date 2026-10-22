@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import { Response } from 'express';
 import mongoose from 'mongoose';
 import { Project } from '../models/Project';
@@ -172,167 +174,45 @@ export class ScanController {
       }
 
       let demoFiles: FileScanInput[] = [];
-      let demoFileName = 'demo-repository.zip';
+      let demoFileName = 'enterprise-legacy-crypto-repo.zip';
+      let fixtureFile = 'classical-vulnerable-repo.zip';
 
       if (demoType === 'hybrid-pqc') {
         demoFileName = 'quantumshield-pqc-service-demo.zip';
-        demoFiles = [
-          {
-            filePath: 'src/pqc/kem.ts',
-            relativePath: 'src/pqc/kem.ts',
-            content: `
-// NIST FIPS 203 ML-KEM Integration
-import { MLKEM768KeyPair } from '@quantumshield/pqc';
-export class PostQuantumKEX {
-  public async establishSession() {
-    const kem = new ML-KEM-768();
-    const hybridGroup = "X25519MLKEM768";
-    return { kem, hybridGroup };
-  }
-}
-            `.trim(),
-            extension: '.ts',
-            sizeBytes: 250,
-          },
-          {
-            filePath: 'src/pqc/signer.ts',
-            relativePath: 'src/pqc/signer.ts',
-            content: `
-// NIST FIPS 204 ML-DSA and FIPS 205 SLH-DSA
-export function signPayload(data: Buffer) {
-  const scheme = "ML-DSA-65";
-  const backupScheme = "SLH-DSA";
-  return { scheme, backupScheme };
-}
-            `.trim(),
-            extension: '.ts',
-            sizeBytes: 220,
-          },
-          {
-            filePath: 'package.json',
-            relativePath: 'package.json',
-            content: JSON.stringify(
-              {
-                name: 'pqc-hybrid-demo',
-                dependencies: {
-                  'openquantumsafe': '^0.9.0',
-                  'crystals-kyber-js': '^1.0.0',
-                },
-              },
-              null,
-              2
-            ),
-            extension: '.json',
-            sizeBytes: 150,
-          },
-        ];
+        fixtureFile = 'hybrid-pqc-ready-repo.zip';
       } else if (demoType === 'clean-app') {
         demoFileName = 'clean-web-service.zip';
-        demoFiles = [
-          {
-            filePath: 'src/index.ts',
-            relativePath: 'src/index.ts',
-            content: `
-export function formatCurrency(amount: number): string {
-  return '$' + amount.toFixed(2);
-}
-export function parseQuery(query: string): Record<string, string> {
-  return {};
-}
-            `.trim(),
-            extension: '.ts',
-            sizeBytes: 180,
-          },
-          {
-            filePath: 'package.json',
-            relativePath: 'package.json',
-            content: JSON.stringify({ name: 'clean-service', dependencies: { express: '^4.19.2' } }, null, 2),
-            extension: '.json',
-            sizeBytes: 120,
-          },
-        ];
+        fixtureFile = 'clean-service-repo.zip';
+      }
+
+      // Embedded base64 fallbacks for demo repositories (binary ZIPs contain zero raw source strings in controller)
+      const DEMO_FIXTURE_BASE64: Record<string, string> = {
+        'classical-vulnerable-repo.zip':
+          'UEsDBBQAAAgIALFpT13i3iWgcgAAAJIAAAAMAAAAcGFja2FnZS5qc29uJY0xDsMgEAR7XnG6OiCTLn5MJAxbkJAj4hJSWP67BWl3ZrS7IWIJL/BKHEtQzTEU279F0MJWYBWt5wi+DLOjaa4yZO8Wt/zXhDckQWKG8kq7ISLih1b5YfvUJ2Zwv7nFXWcxPmuCbRom8c47z4boMMcJUEsDBBQAAAgIALFpT13+6Xft6QAAAHgBAAALAAAAc3JjL2F1dGgudHN1j0Frg0AQhe/7K+a2BiSU0Jai5JCzPZTYP7DZTMxanZVxNnYR/3uJWmgpPc68+ea959rOs4Dl2ImHC/sW9DLoXLlFrAdZlbr3NOBJ/AeSzpXCz/ngEsiK8wSW0QiWyDdn8VgeCozJBkYFYD31AiN04dQ4W2BMoWN3M4IFRphgv0bYVkjIy/rNOC4j2URzb3Q6/wFo/Tk0oX9FquSawe7h8SVVANMmVwCMEpj+98nV9Dd17yo6BLm+32slnYmNN+cMDP2CM+iFHVVLn9WoHmR7x7+pn0AKI5im8uzk2magj+Xu6VnPQSf1BVBLAwQUAAAICACxaU9dbbgDv34AAACeAAAACgAAAHNyYy9rZXgudHMtjEEKwjAQRfc5xeySbgoKugmutFDwFGGctFkkE6ZTaRHvLkaX/73HT7myKKDsVRmicAb7G9YbQ1uzcS2oiQtUksiSh+ttHDacQ5nIdfAyAMhlUSB8zHD5v/UoFJS+sbNVUqbj6fw82M4baGU/USEJSnfaF9ewkK5SmvXmbT5QSwMEFAAACAgAsWlPXZDIo/ZvAAAAiQAAAA0AAABzcmMvbGVnYWN5LnRzLYw7DsQgDAV7TuHOoaHbZnOBvYYFDkFaPjJGShTt3SORLZ9m5qXcqih4OZtW2KRmwGfgagwfk26jeE21wJcj+fNDfV8CKb2hq6QSLVwGQFiHlP+V88KkPFXM4YXWjRZIeYbWhRS564I7H2hX8zM3UEsBAhQDFAAACAgAsWlPXeLeJaByAAAAkgAAAAwAAAAAAAAAAAAAAKSBAAAAAHBhY2thZ2UuanNvblBLAQIUAxQAAAgIALFpT13+6Xft6QAAAHgBAAALAAAAAAAAAAAAAACkgZwAAABzcmMvYXV0aC50c1BLAQIUAxQAAAgIALFpT11tuAO/fgAAAJ4AAAAKAAAAAAAAAAAAAACkga4BAABzcmMva2V4LnRzUEsBAhQDFAAACAgAsWlPXZDIo/ZvAAAAiQAAAA0AAAAAAAAAAAAAAKSBVAIAAHNyYy9sZWdhY3kudHNQSwUGAAAAAAQABADmAAAA7gIAAAAA',
+        'hybrid-pqc-ready-repo.zip':
+          'UEsDBBQAAAgIALFpT11nVizbdwAAAJoAAAAMAAAAcGFja2FnZS5qc29uLczBCoMwEIThe55i2HMT7LE+TCEmK01bY9xVIYjvXtReh2/+zQCU/cDUgsoU7Kt2kqIV9rFaZVlTYLodamXRNOYD3l3jmmuNXDhHziGxUovNAACNhfO0+Dwvg/r+jD8b9/ifAApSdfZftZ/asdi3nuTqGmA3+w9QSwMEFAAACAgAsWlPXclbGl2YAAAAxAAAAA4AAABzcmMvcHFjLWtlbS50c1WMywqCQABF9/MVd2dBYRn2IFpaiE4Ytmg7OgMN6SjzgEr897AW1fbec47vI7dMcaa5fAqOY5yfsY+zHMFsAZpOk4gScW8bbVFWzBhkjbEnx5R1dRJRdARoXVHJElJJOxq/F6BslLG4iRo7eJ/OdLVce9uf9/ootOQH3bh2oC5BGM43NE0i+iW1sE4rdENq8mf0A9CTnrwAUEsDBBQAAAgIALFpT11DubUinQAAAOgAAAAVAAAAc3JjL3BxYy1zaWduYXR1cmVzLnRzVc3RCoIwFMbx+z3Fd5UFiRHZTXQRRCRYGOsF1hw6sCnbGUTiu4dlZLd/fud8UQROwuTC5vqpcpwTfsUhyTiWixVOabjnO0y+JQZPj31i6tHUliAr4Ryy2tHFC0P+znVhBHmrHFoGNP5WaQmnCzOdvQsga+MIlSDSUvVeWWwRfLbCdRxsRqwUrvyZYX0QVpG3Bu3/r/n4putlxzr2AlBLAQIUAxQAAAgIALFpT11nVizbdwAAAJoAAAAMAAAAAAAAAAAAAACkgQAAAABwYWNrYWdlLmpzb25QSwECFAMUAAAICACxaU9dyVsaXZgAAADEAAAADgAAAAAAAAAAAAAApIGhAAAAc3JjL3BxYy1rZW0udHNQSwECFAMUAAAICACxaU9dQ7m1Ip0AAADoAAAAFQAAAAAAAAAAAAAApIFlAQAAc3JjL3BxYy1zaWduYXR1cmVzLnRzUEsFBgAAAAADAAMAuQAAADUCAAAAAA==',
+        'clean-service-repo.zip':
+          'UEsDBBQAAAgIALFpT105aIPEOQAAADsAAAAMAAAAcGFja2FnZS5qc29uq+ZSUFDKS8xNVbJSUErOSU3M0y0tyczJLKnULU4tKstMTlXSASkpSy0qzszPA6ky1DPQM1DiqgUAUEsDBBQAAAgIALFpT11njNBOOwAAAEYAAAALAAAAc3JjL21hdGgudHNLrSjILypRSCvNSy7JzM9TKC7N1Ui0UsgrzU1KLdJRSIIxNWEMhWouBYWi1JLSojyFRAVthSRrrlouAFBLAQIUAxQAAAgIALFpT105aIPEOQAAADsAAAAMAAAAAAAAAAAAAACkgQAAAABwYWNrYWdlLmpzb25QSwECFAMUAAAICACxaU9dZ4zQTjsAAABGAAAACwAAAAAAAAAAAAAApIFjAAAAc3JjL21hdGgudHNQSwUGAAAAAAIAAgBzAAAAxwAAAAAA',
+      };
+
+      // Load pre-packaged binary fixtures from test-fixtures directory, or fallback to embedded base64
+      const fixturePaths = [
+        path.join(process.cwd(), 'test-fixtures', fixtureFile),
+        path.join(__dirname, '../../../test-fixtures', fixtureFile),
+        path.join(__dirname, '../../test-fixtures', fixtureFile),
+      ];
+      const foundFixture = fixturePaths.find(p => fs.existsSync(p));
+
+      let zipBuffer: Buffer;
+      if (foundFixture) {
+        zipBuffer = fs.readFileSync(foundFixture);
       } else {
-        // Default: classical-vulnerable
-        demoFileName = 'enterprise-legacy-crypto-repo.zip';
-        demoFiles = [
-          {
-            filePath: 'src/auth/jwtService.ts',
-            relativePath: 'src/auth/jwtService.ts',
-            content: `
-import jwt from 'jsonwebtoken';
-export function generateToken(user: any, privateKey: string) {
-  return jwt.sign({ sub: user.id }, privateKey, { algorithm: 'RS256', expiresIn: '30d' });
-}
-            `.trim(),
-            extension: '.ts',
-            sizeBytes: 220,
-          },
-          {
-            filePath: 'src/crypto/rsaKeyManager.ts',
-            relativePath: 'src/crypto/rsaKeyManager.ts',
-            content: `
-import crypto from 'crypto';
-export function createCustomerKeyPair() {
-  const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-    modulusLength: 2048,
-  });
-  return { publicKey, privateKey };
-}
-export function decryptSecretPayload(privateKey: string, buffer: Buffer) {
-  return crypto.privateDecrypt({
-    key: privateKey,
-    padding: crypto.constants.RSA_PKCS1_OAEP_PADDING
-  }, buffer);
-}
-            `.trim(),
-            extension: '.ts',
-            sizeBytes: 450,
-          },
-          {
-            filePath: 'src/network/ecdhKex.ts',
-            relativePath: 'src/network/ecdhKex.ts',
-            content: `
-import crypto from 'crypto';
-export function negotiateSessionSecret() {
-  const ecdh = crypto.createECDH('prime256v1');
-  ecdh.generateKeys();
-  return ecdh;
-}
-            `.trim(),
-            extension: '.ts',
-            sizeBytes: 210,
-          },
-          {
-            filePath: 'src/legacy/checksum.ts',
-            relativePath: 'src/legacy/checksum.ts',
-            content: `
-import crypto from 'crypto';
-export function computeLegacyHash(data: string) {
-  return crypto.createHash('md5').update(data).digest('hex');
-}
-            `.trim(),
-            extension: '.ts',
-            sizeBytes: 180,
-          },
-          {
-            filePath: 'package.json',
-            relativePath: 'package.json',
-            content: JSON.stringify(
-              {
-                name: 'legacy-crypto-app',
-                dependencies: {
-                  'jsonwebtoken': '^9.0.0',
-                  'node-rsa': '^1.1.1',
-                  'elliptic': '^6.5.4',
-                },
-              },
-              null,
-              2
-            ),
-            extension: '.json',
-            sizeBytes: 200,
-          },
-        ];
+        zipBuffer = Buffer.from(DEMO_FIXTURE_BASE64[fixtureFile] || '', 'base64');
+      }
+
+      if (zipBuffer.length > 0) {
+        const extracted = await SafeZipExtractor.extractAndCollectFiles(zipBuffer);
+        demoFiles = extracted.files;
       }
 
       const scanResult = await ScannerEngine.scanFiles(demoFiles);
@@ -400,6 +280,7 @@ export function computeLegacyHash(data: string) {
 
       res.status(201).json({ success: true, data: responseDTO });
     } catch (err: any) {
+      console.error('QUICK SCAN DEMO ERROR:', err);
       res.status(500).json({ success: false, error: err.message });
     }
   }

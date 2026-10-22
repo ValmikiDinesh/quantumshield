@@ -34,6 +34,7 @@ RUN npm install --omit=dev
 
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=builder /app/frontend/dist ./public-frontend
+COPY test-fixtures ./test-fixtures
 
 EXPOSE 5001
 

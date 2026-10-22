@@ -41,3 +41,6 @@ pnpm-debug.log*
 test-results/
 coverage/
 .vitest/
+*.tsbuildinfo
+.cursor/
+*.zip
