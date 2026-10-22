@@ -74,7 +74,7 @@ export class SafeZipExtractor {
 
     if (totalEntriesCount > limits.maxFiles) {
       throw new Error(
-        `Security Limit Exceeded: ZIP contains ${totalEntriesCount} entries, exceeding maximum allowed limit of ${limits.maxFiles}.`
+        `Security Limit Exceeded: ZIP contains ${totalEntriesCount} entries, exceeding maximum allowed limit of ${limits.maxFiles}. Please exclude dependency directories like "node_modules/" and ".git/" before creating your ZIP archive.`
       );
     }
 
