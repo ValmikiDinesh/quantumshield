@@ -259,10 +259,14 @@ export class ScanController {
         readinessAssessment: scanResult.readinessAssessment,
         algorithmInventory: scanResult.algorithmInventory,
         findings: scanResult.findings,
+        rulesVersion: scanResult.rulesVersion,
+        scannerVersion: scanResult.scannerVersion,
       });
 
-      // Update project scan count
-      await Project.findByIdAndUpdate(project._id, { $inc: { scanCount: 1 } });
+      // 6. Update Project latest scan and counter
+      project.scanCount += 1;
+      project.latestScanId = scan._id;
+      await project.save();
 
       // Audit log
       await AuditLog.create({
