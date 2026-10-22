@@ -199,6 +199,12 @@ export class SafeZipExtractor {
         const ext = path.extname(entry.name).toLowerCase();
         if (IGNORED_BINARY_EXTENSIONS.has(ext)) continue;
 
+        const isTestFile =
+          /\.(test|spec)\.[a-zA-Z0-9]+$/i.test(entry.name) ||
+          /^test_.*\.py$/i.test(entry.name) ||
+          /.*_test\.go$/i.test(entry.name);
+        if (isTestFile) continue;
+
         const isSupported = SUPPORTED_EXTENSIONS.has(ext) || SUPPORTED_EXACT_NAMES.has(entry.name.toLowerCase());
         if (isSupported) {
           const stat = await fs.promises.stat(fullPath);

@@ -144,6 +144,12 @@ export const api = {
     });
   },
 
+  scanGitHubRepo: (projectId: string, repoUrl: string, branch?: string, githubToken?: string) =>
+    request<ScanDetailDTO>(`/projects/${projectId}/scans/github`, {
+      method: 'POST',
+      body: JSON.stringify({ repoUrl, branch, githubToken }),
+    }),
+
   quickScanDemo: (projectId: string, demoType: 'classical-vulnerable' | 'hybrid-pqc' | 'clean-app') =>
     request<ScanDetailDTO>(`/projects/${projectId}/quick-scan-demo`, {
       method: 'POST',

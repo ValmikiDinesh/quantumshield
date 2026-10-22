@@ -16,7 +16,7 @@ import {
   createProjectSchema,
   updateProjectSchema,
 } from '../controllers/projectController';
-import { ScanController } from '../controllers/scanController';
+import { ScanController, scanGitHubSchema } from '../controllers/scanController';
 import { DashboardController } from '../controllers/dashboardController';
 import {
   OrganizationController,
@@ -86,6 +86,13 @@ router.post(
   scanLimiter,
   upload.single('file'),
   ScanController.uploadAndScan
+);
+router.post(
+  '/projects/:projectId/scans/github',
+  requireAuth,
+  scanLimiter,
+  validate(scanGitHubSchema),
+  ScanController.scanGitHubRepo
 );
 router.post(
   '/projects/:projectId/quick-scan-demo',

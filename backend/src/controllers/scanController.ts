@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { Response } from 'express';
+import { z } from 'zod';
 import mongoose from 'mongoose';
 import { Project } from '../models/Project';
 import { Scan } from '../models/Scan';
@@ -10,6 +11,7 @@ import { SafeZipExtractor } from '../scanner/extractor';
 import { ScannerEngine } from '../scanner/engine';
 import { ReportService } from '../services/reportService';
 import { AIExplanationService } from '../services/aiExplanationService';
+import { GitService, GitCloneResult } from '../services/gitService';
 import {
   AuthenticatedRequest,
   ScanSummaryDTO,
@@ -17,6 +19,12 @@ import {
   ScanComparisonDTO,
   FileScanInput,
 } from '../types';
+
+export const scanGitHubSchema = z.object({
+  repoUrl: z.string().min(3, 'Repository URL or shorthand is required').max(300),
+  branch: z.string().max(100).optional(),
+  githubToken: z.string().max(300).optional(),
+});
 
 export class ScanController {
   /**
@@ -155,6 +163,157 @@ export class ScanController {
       res.status(201).json({ success: true, data: responseDTO });
     } catch (err: any) {
       res.status(400).json({ success: false, error: err.message || 'Scan failed' });
+    }
+  }
+
+  /**
+   * Shallow-clones and executes a cryptographic scan on a remote GitHub or Git repository.
+   */
+  public static async scanGitHubRepo(req: AuthenticatedRequest, res: Response): Promise<void> {
+    let cloneResult: GitCloneResult | null = null;
+    try {
+      const { projectId } = req.params;
+      const { repoUrl, branch, githubToken } = req.body;
+      const orgId = req.user!.organizationId;
+
+      if (!repoUrl) {
+        res.status(400).json({ success: false, error: 'Repository URL or shorthand is required.' });
+        return;
+      }
+
+      const project = await Project.findOne({ _id: projectId, organizationId: orgId });
+      if (!project) {
+        res.status(404).json({ success: false, error: 'Project not found or access denied.' });
+        return;
+      }
+
+      // Check organization scan limits
+      const org = await Organization.findById(orgId);
+      if (org) {
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const currentMonthScans = await Scan.countDocuments({
+          organizationId: orgId,
+          createdAt: { $gte: startOfMonth },
+        });
+
+        if (currentMonthScans >= org.maxScansPerMonth) {
+          res.status(403).json({
+            success: false,
+            error: `Monthly scan limit reached for ${org.plan.toUpperCase()} tier (${org.maxScansPerMonth} scans/month). Upgrade your plan for higher limits.`,
+          });
+          return;
+        }
+      }
+
+      // 1. Shallow clone the repository (--depth 1) into a temporary directory
+      cloneResult = await GitService.clone(repoUrl, {
+        branch: branch ? branch.trim() : undefined,
+        token: githubToken ? githubToken.trim() : undefined,
+      });
+
+      // 2. Collect supported source code and manifest files from the cloned repository
+      const files = await SafeZipExtractor.collectFilesFromDirectory(cloneResult.tempDir);
+
+      if (files.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: 'No supported source code or configuration files found in cloned repository.',
+        });
+        return;
+      }
+
+      // 3. Scan execution
+      const scanResult = await ScannerEngine.scanFiles(files);
+
+      // 4. Count findings by severity
+      let critical = 0, high = 0, medium = 0, low = 0, info = 0;
+      for (const f of scanResult.findings) {
+        if (f.severity === 'Critical') critical++;
+        else if (f.severity === 'High') high++;
+        else if (f.severity === 'Medium') medium++;
+        else if (f.severity === 'Low') low++;
+        else if (f.severity === 'Informational') info++;
+      }
+
+      // 5. Save Scan record
+      const scanDisplayName = `${cloneResult.cleanRepoName} (${cloneResult.branch}${cloneResult.commitHash ? `@${cloneResult.commitHash.substring(0, 7)}` : ''})`;
+      const scan = await Scan.create({
+        projectId: project._id,
+        organizationId: orgId,
+        status: 'completed',
+        uploadedFileName: scanDisplayName,
+        fileCount: files.length,
+        supportedFileCount: files.length,
+        durationMs: scanResult.durationMs,
+        readinessScore: scanResult.readinessAssessment.readinessScore,
+        riskLevel: scanResult.readinessAssessment.riskLevel,
+        findingsCount: scanResult.findings.length,
+        criticalCount: critical,
+        highCount: high,
+        mediumCount: medium,
+        lowCount: low,
+        infoCount: info,
+        readinessAssessment: scanResult.readinessAssessment,
+        algorithmInventory: scanResult.algorithmInventory,
+        findings: scanResult.findings,
+      });
+
+      // Update project scan count
+      await Project.findByIdAndUpdate(project._id, { $inc: { scanCount: 1 } });
+
+      // Audit log
+      await AuditLog.create({
+        organizationId: orgId,
+        userId: req.user!.userId,
+        action: 'scan.completed',
+        resourceType: 'scan',
+        resourceId: scan._id.toString(),
+        metadata: {
+          projectId: project._id.toString(),
+          source: 'github',
+          repo: cloneResult.cleanRepoName,
+          branch: cloneResult.branch,
+          readinessScore: scan.readinessScore,
+          findingsCount: scan.findingsCount,
+        },
+      });
+
+      const responseDTO: ScanDetailDTO = {
+        id: scan._id.toString(),
+        projectId: project._id.toString(),
+        projectName: project.name,
+        status: scan.status,
+        uploadedFileName: scan.uploadedFileName,
+        fileCount: scan.fileCount,
+        supportedFileCount: scan.supportedFileCount,
+        durationMs: scan.durationMs,
+        findingsCount: scan.findingsCount,
+        criticalCount: scan.criticalCount,
+        highCount: scan.highCount,
+        mediumCount: scan.mediumCount,
+        lowCount: scan.lowCount,
+        infoCount: scan.infoCount,
+        readinessScore: scan.readinessScore,
+        riskLevel: scan.riskLevel,
+        createdAt: scan.createdAt.toISOString(),
+        findings: scan.findings,
+        algorithmInventory: scan.algorithmInventory,
+        readinessAssessment: scan.readinessAssessment,
+        rulesVersion: scan.rulesVersion,
+        scannerVersion: scan.scannerVersion,
+      };
+
+      res.status(201).json({ success: true, data: responseDTO });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message || 'GitHub repository scan failed' });
+    } finally {
+      // Zero Code Retention: always delete the cloned repository from disk
+      if (cloneResult) {
+        GitService.cleanup(cloneResult.tempDir);
+      }
     }
   }
 

@@ -26,6 +26,8 @@ FROM node:18-alpine AS runner
 
 WORKDIR /app
 
+RUN apk add --no-cache git
+
 ENV NODE_ENV=production
 ENV PORT=5001
 
