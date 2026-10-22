@@ -84,7 +84,7 @@ export class ManifestInspector {
             title: `Cryptographic Package Declared: ${depName}@${version}`,
             description: info.desc,
             category: info.isPqc ? 'pqc-implementation' : 'cryptographic-api',
-            severity: info.isPqc ? 'Informational' : 'Low',
+            severity: 'Informational',
             confidence: 'High',
             classification: info.isPqc ? 'Confirmed pattern match' : 'Informational observation',
             filePath,
@@ -371,7 +371,7 @@ export class ManifestInspector {
     pqcRelevance: string,
     impact: 'crypto-agility' | 'quantum-resistant',
     category: 'cryptographic-api' | 'pqc-implementation' = 'cryptographic-api',
-    severity: 'Informational' | 'Low' = 'Low'
+    severity: 'Informational' | 'Low' = 'Informational'
   ): FindingDTO {
     return {
       findingId: uuidv4(),

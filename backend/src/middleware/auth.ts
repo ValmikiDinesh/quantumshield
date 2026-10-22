@@ -19,7 +19,9 @@ export function requireAuth(
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as AuthenticatedUser;
+    const decoded = jwt.verify(token, env.JWT_SECRET, {
+      algorithms: ['HS256'],
+    }) as AuthenticatedUser;
     req.user = decoded;
     next();
   } catch (err: any) {

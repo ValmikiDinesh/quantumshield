@@ -110,7 +110,24 @@ export class ReadinessAssessor {
       let status: AlgorithmInventoryItem['quantumStatus'] = 'vulnerable-shor';
       let replacement: string | undefined = undefined;
 
-      if (f.ruleId.includes('RSA')) {
+      // 1. Post-Quantum standards (MUST be evaluated first because ML-DSA and SLH-DSA contain 'DSA')
+      if (f.ruleId.includes('MLKEM') || f.title.includes('ML-KEM') || f.ruleId === 'PQC-ALG-MLKEM-FIPS203') {
+        algoName = 'ML-KEM (FIPS 203 Key Encapsulation)';
+        cat = 'post-quantum';
+        status = 'quantum-resistant';
+      } else if (f.ruleId.includes('MLDSA') || f.title.includes('ML-DSA') || f.ruleId === 'PQC-ALG-MLDSA-FIPS204') {
+        algoName = 'ML-DSA (FIPS 204 Digital Signature)';
+        cat = 'post-quantum';
+        status = 'quantum-resistant';
+      } else if (f.ruleId.includes('SLHDSA') || f.title.includes('SLH-DSA') || f.ruleId === 'PQC-ALG-SLHDSA-FIPS205') {
+        algoName = 'SLH-DSA (FIPS 205 Stateless Hash Signature)';
+        cat = 'post-quantum';
+        status = 'quantum-resistant';
+      } else if (f.ruleId.includes('HYBRID') || f.category === 'pqc-implementation') {
+        algoName = 'Hybrid Classical + Post-Quantum Scheme';
+        cat = 'hybrid';
+        status = 'quantum-resistant';
+      } else if (f.ruleId.includes('RSA')) {
         algoName = 'RSA (Asymmetric)';
         cat = 'asymmetric';
         status = 'vulnerable-shor';
@@ -125,41 +142,30 @@ export class ReadinessAssessor {
         cat = 'asymmetric';
         status = 'vulnerable-shor';
         replacement = 'ML-DSA (FIPS 204) or SLH-DSA (FIPS 205)';
+      } else if (f.ruleId.includes('PUB-DSA') || f.ruleId === 'PQC-PUB-DSA-SIGN') {
+        algoName = 'DSA (Digital Signature Algorithm)';
+        cat = 'asymmetric';
+        status = 'vulnerable-shor';
+        replacement = 'ML-DSA (FIPS 204)';
       } else if (f.ruleId.includes('DH')) {
         algoName = 'Diffie-Hellman (Classical FFDHE)';
         cat = 'asymmetric';
         status = 'vulnerable-shor';
         replacement = 'ML-KEM (FIPS 203)';
-      } else if (f.ruleId.includes('DSA')) {
-        algoName = 'DSA (Digital Signature Algorithm)';
-        cat = 'asymmetric';
-        status = 'vulnerable-shor';
-        replacement = 'ML-DSA (FIPS 204)';
-      } else if (f.ruleId.includes('MLKEM') || f.title.includes('ML-KEM')) {
-        algoName = 'ML-KEM (FIPS 203 Key Encapsulation)';
-        cat = 'post-quantum';
-        status = 'quantum-resistant';
-      } else if (f.ruleId.includes('MLDSA') || f.title.includes('ML-DSA')) {
-        algoName = 'ML-DSA (FIPS 204 Digital Signature)';
-        cat = 'post-quantum';
-        status = 'quantum-resistant';
-      } else if (f.ruleId.includes('SLHDSA') || f.title.includes('SLH-DSA')) {
-        algoName = 'SLH-DSA (FIPS 205 Stateless Hash Signature)';
-        cat = 'post-quantum';
-        status = 'quantum-resistant';
-      } else if (f.ruleId.includes('HYBRID')) {
-        algoName = 'Hybrid Classical + Post-Quantum Scheme';
-        cat = 'hybrid';
-        status = 'quantum-resistant';
       } else if (f.ruleId.includes('LEGACY')) {
         algoName = 'Legacy Weak Ciphers (MD5/SHA1/DES)';
         cat = 'legacy-weak';
         status = 'legacy-insecure';
         replacement = 'SHA-256 / SHA-3 / AES-256-GCM';
+      } else if (f.ruleId === 'PQC-LIB-MANIFEST-DEP') {
+        algoName = 'Cryptographic Package (Manifest)';
+        cat = 'symmetric';
+        status = 'quantum-resistant';
+        replacement = 'Verify symmetric algorithm usage (e.g. HS256 / AES-256-GCM)';
       } else {
         algoName = f.title.split(':')[0] || 'Cryptographic Primitive';
-        cat = 'asymmetric';
-        status = 'vulnerable-shor';
+        cat = f.category === 'weak-legacy' ? 'legacy-weak' : 'asymmetric';
+        status = f.quantumImpactType === 'quantum-resistant' ? 'quantum-resistant' : 'vulnerable-shor';
       }
 
       if (!map.has(algoName)) {
