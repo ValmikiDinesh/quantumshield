@@ -37,6 +37,8 @@ export class ReportService {
       },
       summary: {
         totalFindings: scan.findingsCount,
+        vulnerabilitiesCount: scan.criticalCount + scan.highCount + scan.mediumCount + scan.lowCount,
+        positivePqcIndicatorsCount: scan.infoCount,
         critical: scan.criticalCount,
         high: scan.highCount,
         medium: scan.mediumCount,
@@ -219,7 +221,11 @@ export class ReportService {
       doc.addPage();
 
       let findingY = 60;
-      doc.fillColor(NAVY).fontSize(14).font('Helvetica-Bold').text('Detailed Findings & Migration Roadmap', 50, findingY);
+      const vulnerabilitiesCount = scan.criticalCount + scan.highCount + scan.mediumCount + scan.lowCount;
+      const findingsHeading = vulnerabilitiesCount === 0
+        ? 'Verified Cryptographic Standards & Indicators (0 Vulnerabilities)'
+        : 'Detailed Findings & Migration Roadmap';
+      doc.fillColor(NAVY).fontSize(14).font('Helvetica-Bold').text(findingsHeading, 50, findingY);
       doc.strokeColor(BORDER_COLOR).moveTo(50, findingY + 18).lineTo(545, findingY + 18).stroke();
       findingY += 30;
 
@@ -239,21 +245,30 @@ export class ReportService {
           doc.roundedRect(50, findingY, 495, 95, 4).fill('#FFFFFF');
           doc.strokeColor(BORDER_COLOR).roundedRect(50, findingY, 495, 95, 4).stroke();
 
+          const isPositive = f.severity === 'Informational' || f.quantumImpactType === 'quantum-resistant' || f.category === 'pqc-implementation';
           let sColor = '#EA580C';
+          let badgeText = f.severity.toUpperCase();
           if (f.severity === 'Critical') sColor = '#DC2626';
           else if (f.severity === 'Medium') sColor = '#D97706';
           else if (f.severity === 'Low') sColor = '#2563EB';
-          else if (f.severity === 'Informational') sColor = '#64748B';
+          else if (isPositive) {
+            sColor = '#10B981';
+            badgeText = 'VERIFIED PQC';
+          }
 
           doc.roundedRect(50, findingY, 6, 95, 2).fill(sColor);
 
           doc.fillColor(NAVY).fontSize(10).font('Helvetica-Bold').text(`${idx + 1}. ${f.title}`, 65, findingY + 8, { width: 340 });
-          doc.fillColor(sColor).fontSize(8).font('Helvetica-Bold').text(f.severity.toUpperCase(), 450, findingY + 8, { width: 85, align: 'right' });
+          doc.fillColor(sColor).fontSize(8).font('Helvetica-Bold').text(badgeText, 430, findingY + 8, { width: 105, align: 'right' });
 
           doc.fillColor(LIGHT_GRAY).fontSize(8).font('Helvetica').text(`Location: ${f.filePath}:${f.line} | Rule: ${f.ruleId} | Classification: ${f.classification}`, 65, findingY + 22);
 
-          doc.fillColor(DARK_GRAY).fontSize(8).font('Helvetica').text(`Quantum Relevance: ${f.quantumMigrationRelevance}`, 65, findingY + 36, { width: 465, ellipsis: true });
-          doc.fillColor(BLUE).fontSize(8).font('Helvetica-Bold').text(`Remediation: `, 65, findingY + 58, { continued: true })
+          const contextLabel = isPositive ? 'NIST Standard Evaluation: ' : 'Quantum Relevance: ';
+          doc.fillColor(DARK_GRAY).fontSize(8).font('Helvetica').text(`${contextLabel}${f.quantumMigrationRelevance}`, 65, findingY + 36, { width: 465, ellipsis: true });
+          
+          const adviceLabel = isPositive ? 'Best Practice Guidance: ' : 'Remediation: ';
+          const adviceColor = isPositive ? '#059669' : BLUE;
+          doc.fillColor(adviceColor).fontSize(8).font('Helvetica-Bold').text(adviceLabel, 65, findingY + 58, { continued: true })
             .font('Helvetica').fillColor(DARK_GRAY).text(f.recommendedRemediation, { width: 465, ellipsis: true });
 
           findingY += 105;

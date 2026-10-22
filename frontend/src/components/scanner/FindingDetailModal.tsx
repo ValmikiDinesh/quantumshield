@@ -65,8 +65,21 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
     setTimeout(() => setCopiedRemediation(false), 2000);
   };
 
+  const isPositivePqc = finding.severity === 'Informational' || finding.quantumImpactType === 'quantum-resistant' || finding.category === 'pqc-implementation';
+
   // Plain-English layman threat guide
   const laymanInfo = (() => {
+    if (isPositivePqc) {
+      return {
+        urgency: 'Positive PQC Adoption (Zero Vulnerability)',
+        badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+        icon: <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />,
+        analogy: 'A state-of-the-art lattice grid vault lock that is mathematically resistant to both classical and quantum supercomputers.',
+        danger: 'Verified Quantum-Safe: No known vulnerability. Earns positive compliance credit toward 100/100 score.',
+        standardTarget: 'NIST FIPS 203 / 204 / 205 Standard Verified',
+        fix: 'Positive adoption verified. No code changes required. Maintain dependency currency with NIST errata updates.',
+      };
+    }
     if (finding.quantumImpactType === 'harvest-now-decrypt-later' || finding.ruleId.includes('ECDH') || finding.ruleId.includes('RSA-KEYGEN') || finding.ruleId.includes('KEYEX')) {
       return {
         urgency: 'Immediate Confidentiality Exposure',
@@ -87,17 +100,6 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
         danger: 'Future Forgeability: Quantum computers can deduce the private signing key from the public key, enabling attackers to forge JWTs, certificates, and firmware signatures.',
         standardTarget: 'NIST FIPS 204 (ML-DSA) / FIPS 205 (SLH-DSA)',
         fix: 'Migrate digital signatures to NIST FIPS 204 (ML-DSA) or stateless hash-based signatures (FIPS 205 SLH-DSA).',
-      };
-    }
-    if (finding.category === 'pqc-implementation' || finding.quantumImpactType === 'quantum-resistant') {
-      return {
-        urgency: 'Post-Quantum Prepared',
-        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        icon: <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />,
-        analogy: 'A high-dimension lattice grid vault lock that is resistant to both classical and quantum cryptanalysis.',
-        danger: 'No known quantum vulnerability. Resists both Shor\'s factoring and Grover\'s search algorithms.',
-        standardTarget: 'FIPS 203 / 204 / 205 Compliant',
-        fix: 'Maintain dependency versions to ensure adherence to finalized NIST August 2024 specifications.',
       };
     }
     if (finding.category === 'weak-legacy') {
@@ -228,17 +230,17 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
                     </span>
                     <span className="text-slate-600 leading-relaxed">{laymanInfo.analogy}</span>
                   </div>
-                  <div className="p-3 bg-white rounded-lg border border-red-100 shadow-2xs">
-                    <span className="font-bold text-red-900 block mb-1 flex items-center gap-1 text-xs">
-                      <ShieldAlert className="w-3.5 h-3.5 text-red-500" />
-                      The Exact Threat
+                  <div className={`p-3 bg-white rounded-lg shadow-2xs ${isPositivePqc ? 'border border-emerald-200' : 'border border-red-100'}`}>
+                    <span className={`font-bold block mb-1 flex items-center gap-1 text-xs ${isPositivePqc ? 'text-emerald-900' : 'text-red-900'}`}>
+                      {isPositivePqc ? <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> : <ShieldAlert className="w-3.5 h-3.5 text-red-500" />}
+                      {isPositivePqc ? 'Security Status' : 'The Exact Threat'}
                     </span>
                     <span className="text-slate-600 leading-relaxed">{laymanInfo.danger}</span>
                   </div>
                   <div className="p-3 bg-white rounded-lg border border-emerald-100 shadow-2xs">
                     <span className="font-bold text-emerald-900 block mb-1 flex items-center gap-1 text-xs">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                      NIST Recommended Fix
+                      {isPositivePqc ? 'Best Practice & Maintenance' : 'NIST Recommended Fix'}
                     </span>
                     <span className="text-slate-600 leading-relaxed">{laymanInfo.fix}</span>
                   </div>
@@ -256,12 +258,26 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
               </div>
 
               {/* Quantum Migration Relevance */}
-              <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200/90 shadow-2xs">
-                <h4 className="text-xs font-bold text-amber-950 flex items-center space-x-1.5 mb-1.5">
-                  <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Post-Quantum Cryptography (PQC) Exposure Context</span>
+              <div className={`p-4 rounded-xl shadow-2xs ${
+                isPositivePqc
+                  ? 'bg-emerald-50/80 border border-emerald-200/90'
+                  : 'bg-amber-50/80 border border-amber-200/90'
+              }`}>
+                <h4 className={`text-xs font-bold flex items-center space-x-1.5 mb-1.5 ${
+                  isPositivePqc ? 'text-emerald-950' : 'text-amber-950'
+                }`}>
+                  {isPositivePqc ? (
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
+                  )}
+                  <span>
+                    {isPositivePqc
+                      ? 'NIST Quantum-Resistant Standard Compliance'
+                      : 'Post-Quantum Cryptography (PQC) Exposure Context'}
+                  </span>
                 </h4>
-                <p className="text-xs text-amber-900 leading-relaxed">
+                <p className={`text-xs leading-relaxed ${isPositivePqc ? 'text-emerald-900' : 'text-amber-900'}`}>
                   {finding.quantumMigrationRelevance}
                 </p>
               </div>
@@ -278,20 +294,30 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
               </div>
 
               {/* Recommended Action */}
-              <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-2">
+              <div className={`p-4 rounded-xl bg-white border shadow-2xs space-y-2 ${
+                isPositivePqc ? 'border-emerald-200' : 'border-slate-200'
+              }`}>
                 <div className="flex items-center justify-between">
-                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    Recommended Remediation Plan
+                  <h4 className={`text-[11px] font-bold uppercase tracking-wider ${
+                    isPositivePqc ? 'text-emerald-800' : 'text-slate-500'
+                  }`}>
+                    {isPositivePqc
+                      ? 'Positive Adoption Verified • Best Practice & Operational Guidance'
+                      : 'Recommended Remediation Plan'}
                   </h4>
                   <button
                     onClick={copyRemediation}
                     className="text-slate-500 hover:text-brand-600 flex items-center space-x-1 text-[11px] font-semibold"
                   >
                     {copiedRemediation ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedRemediation ? 'Copied' : 'Copy Remediation'}</span>
+                    <span>{copiedRemediation ? 'Copied' : (isPositivePqc ? 'Copy Guidance' : 'Copy Remediation')}</span>
                   </button>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 leading-relaxed text-xs font-mono">
+                <div className={`p-3 rounded-lg border leading-relaxed text-xs font-mono ${
+                  isPositivePqc
+                    ? 'bg-emerald-50/50 border-emerald-100 text-emerald-950'
+                    : 'bg-slate-50 border-slate-200 text-slate-800'
+                }`}>
                   {finding.recommendedRemediation}
                 </div>
               </div>
@@ -371,17 +397,19 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
                     <Sparkles className="w-6 h-6 text-indigo-600" />
                   </div>
                   <h4 className="text-sm font-bold text-navy-950">
-                    Contextual Post-Quantum Migration Guidance
+                    {isPositivePqc ? 'Cryptographic Standard Verification & Best Practices' : 'Contextual Post-Quantum Migration Guidance'}
                   </h4>
                   <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-                    Request an instant cryptographic review with step-by-step remediation commands, library swap recommendations, and architectural checklists.
+                    {isPositivePqc
+                      ? 'Review the verified NIST FIPS standard parameters, algorithm robustness guarantees, and maintenance recommendations.'
+                      : 'Request an instant cryptographic review with step-by-step remediation commands, library swap recommendations, and architectural checklists.'}
                   </p>
                   <button
                     onClick={fetchAiExplanation}
                     className="mt-2 bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs inline-flex items-center space-x-2 shadow-sm transition-all"
                   >
                     <Sparkles className="w-4 h-4 text-amber-300" />
-                    <span>Generate Migration Guidance</span>
+                    <span>{isPositivePqc ? 'View Verification Details' : 'Generate Migration Guidance'}</span>
                   </button>
                 </div>
               )}
@@ -390,7 +418,7 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
                 <div className="p-10 rounded-2xl bg-indigo-50/40 border border-indigo-100 text-center space-y-2">
                   <Loader2 className="w-7 h-7 text-brand-600 animate-spin mx-auto mb-3" />
                   <p className="text-xs font-bold text-navy-950">
-                    Synthesizing Cryptographic Migration Steps...
+                    {isPositivePqc ? 'Synthesizing Cryptographic Verification Details...' : 'Synthesizing Cryptographic Migration Steps...'}
                   </p>
                   <p className="text-[11px] text-slate-500">
                     Evaluating NIST FIPS 203/204 parameters, lattice key sizes, and library replacements
@@ -413,7 +441,7 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
                     <div className="flex items-center justify-between pb-3 border-b border-indigo-100">
                       <div className="flex items-center space-x-2 text-indigo-950 font-bold text-xs">
                         <Sparkles className="w-4 h-4 text-amber-500" />
-                        <span>AI Migration Assistant Analysis</span>
+                        <span>{isPositivePqc ? 'AI Cryptographic Verification Analysis' : 'AI Migration Assistant Analysis'}</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full font-bold">
@@ -440,7 +468,7 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
 
                     <div>
                       <h5 className="font-bold text-slate-800 text-xs mb-1 uppercase tracking-wide">
-                        Quantum Threat Breakdown
+                        {isPositivePqc ? 'Quantum Resilience Assessment' : 'Quantum Threat Breakdown'}
                       </h5>
                       <p className="text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-lg border border-slate-200">
                         {aiExplanation.quantumThreatExplanation}
@@ -449,7 +477,7 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
 
                     <div>
                       <h5 className="font-bold text-slate-800 text-xs mb-2 uppercase tracking-wide">
-                        Step-by-Step Migration Guide
+                        {isPositivePqc ? 'Verification & Best Practice Guide' : 'Step-by-Step Migration Guide'}
                       </h5>
                       <div className="space-y-2">
                         {aiExplanation.stepByStepMigrationGuide.map((step, idx) => (

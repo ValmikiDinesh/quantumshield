@@ -39,21 +39,30 @@ export const ScanDetailPage: React.FC = () => {
   const [impactFilter, setImpactFilter] = useState('ALL');
   const [isPlainEnglishMode, setIsPlainEnglishMode] = useState(false);
 
-  const getLaymanFindingSummary = (f: FindingDTO): string => {
-    if (f.ruleId === 'PQC-PUB-RSA-KEYGEN') {
-      return 'Using an old mathematical padlock (RSA). Quantum computers can break this in seconds. Replace with NIST ML-KEM.';
+  const getLaymanFindingSummary = (f: FindingDTO) => {
+    if (f.category === 'pqc-implementation' || f.quantumImpactType === 'quantum-resistant' || f.severity === 'Informational') {
+      if (f.ruleId === 'PQC-ALG-MLKEM-FIPS203') {
+        return 'VERIFIED PQC: NIST FIPS 203 (ML-KEM) lattice key encapsulation. Immune to quantum decryption (HNDL). No code changes required.';
+      }
+      if (f.ruleId === 'PQC-ALG-MLDSA-FIPS204') {
+        return 'VERIFIED PQC: NIST FIPS 204 (ML-DSA) lattice digital signature. Immune to quantum forgery. No code changes required.';
+      }
+      if (f.ruleId === 'PQC-ALG-SLHDSA-FIPS205') {
+        return 'VERIFIED PQC: NIST FIPS 205 (SLH-DSA) stateless hash-based digital signature. Immune to quantum forgery. No code changes required.';
+      }
+      if (f.ruleId.includes('HYBRID')) {
+        return 'VERIFIED PQC: Hybrid post-quantum key exchange combining classical ECDH with NIST ML-KEM. No code changes required.';
+      }
+      return 'VERIFIED PQC: Quantum-resistant cryptographic primitive or library detected. Zero vulnerability (100/100 compliance).';
     }
-    if (f.ruleId === 'PQC-PUB-ECDH-KEYEX') {
-      return 'Elliptic Curve key exchange. Attackers can record your data today and crack it later ("Harvest Now, Decrypt Later").';
+    if (f.ruleId === 'CR-ALG-RSA-KEYGEN' || f.ruleId === 'CR-ALG-RSA-ENCRYPT' || f.ruleId === 'PQC-PUB-RSA-KEYGEN') {
+      return 'RSA encryption / key exchange detected. Vulnerable to Harvest Now Decrypt Later via Shor’s quantum algorithm.';
     }
-    if (f.ruleId === 'PQC-PUB-ECDSA-SIGN') {
+    if (f.ruleId === 'CR-ALG-ECDH' || f.ruleId === 'PQC-PUB-ECDH-KEYEX') {
+      return 'Elliptic Curve Diffie-Hellman key exchange. Intercepted traffic can be decrypted once quantum supercomputers arrive.';
+    }
+    if (f.ruleId === 'CR-ALG-ECDSA' || f.ruleId === 'PQC-PUB-ECDSA-SIGN') {
       return 'Elliptic Curve digital signature. Quantum computers will be able to forge valid signatures.';
-    }
-    if (f.ruleId === 'PQC-ALG-MLKEM-FIPS203') {
-      return 'POSITIVE: Post-quantum lattice lock (NIST FIPS 203). Safe against quantum decryption.';
-    }
-    if (f.ruleId === 'PQC-ALG-MLDSA-FIPS204') {
-      return 'POSITIVE: Post-quantum digital seal (NIST FIPS 204). Safe against quantum forgery.';
     }
     if (f.category === 'weak-legacy') {
       return 'Legacy insecure cipher. Vulnerable to everyday attacks, not just quantum computers.';
@@ -121,6 +130,8 @@ export const ScanDetailPage: React.FC = () => {
 
     return matchesSearch && matchesSeverity && matchesCategory && matchesImpact;
   });
+
+  const vulnerabilitiesCount = (scan?.findings || []).filter(f => f.severity !== 'Informational').length;
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -210,6 +221,8 @@ export const ScanDetailPage: React.FC = () => {
                           ? `Your codebase uses older cryptographic locks (found ${scan.readinessAssessment.shorVulnerableCount} classical algorithms, including RSA or ECC). While these still resist ordinary laptops, quantum computers will break them quickly. Attackers are collecting encrypted traffic now to decrypt later ("Harvest Now, Decrypt Later"). Your engineering team should plan an upgrade to NIST ML-KEM.`
                           : scan.readinessScore < 80
                           ? `Your codebase has moderate quantum readiness. It has ${scan.readinessAssessment.shorVulnerableCount} older algorithms that should be replaced with NIST FIPS 203/204 standards over the next 1–2 release cycles.`
+                          : scan.readinessScore === 100
+                          ? `Outstanding! Your codebase has achieved 100% Quantum Readiness. Zero vulnerabilities were detected. All ${scan.findings.length} findings represent verified NIST post-quantum standard adoptions (ML-KEM, ML-DSA, SLH-DSA). No code changes are required.`
                           : `Great job! Your codebase shows strong quantum resilience, with ${scan.readinessAssessment.pqcDetectedCount} post-quantum algorithms detected and very little legacy exposure.`
                         }
                       </p>
@@ -284,10 +297,14 @@ export const ScanDetailPage: React.FC = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-bold text-navy-950 uppercase tracking-wider">
-                        Findings Explorer ({filteredFindings.length} of {scan.findings.length})
+                        {vulnerabilitiesCount === 0
+                          ? `Verified Cryptographic Standards & Indicators (${filteredFindings.length} Verified PQC Items • 0 Vulnerabilities)`
+                          : `Findings Explorer (${filteredFindings.length} of ${scan.findings.length})`}
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Inspect exact file locations, code snippets, and remediation roadmaps
+                        {vulnerabilitiesCount === 0
+                          ? 'All cryptographic primitives in this scan conform to NIST Post-Quantum standards (Zero vulnerabilities found)'
+                          : 'Inspect exact file locations, code snippets, and remediation roadmaps'}
                       </p>
                     </div>
                   </div>
@@ -360,7 +377,7 @@ export const ScanDetailPage: React.FC = () => {
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
                         <tr className="bg-slate-50 text-slate-500 border-b border-slate-200 uppercase font-semibold text-[11px] tracking-wider">
-                          <th className="py-3 px-5">Severity</th>
+                          <th className="py-3 px-5">{vulnerabilitiesCount === 0 ? 'Status' : 'Severity'}</th>
                           <th className="py-3 px-4">Finding Title</th>
                           <th className="py-3 px-4">Location</th>
                           <th className="py-3 px-4">Quantum Impact</th>

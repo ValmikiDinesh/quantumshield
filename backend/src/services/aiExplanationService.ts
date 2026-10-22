@@ -41,10 +41,12 @@ ${sanitizedEvidence}
 Quantum Impact Type: ${finding.quantumImpactType}
 NIST Remediation Context: ${finding.recommendedRemediation}
 
+IMPORTANT: If the finding is informational or already implements a post-quantum standard (ML-KEM, ML-DSA, SLH-DSA, hybrid), clearly confirm that it is quantum-safe, explain that no code changes are required, and provide verification/maintenance guidance instead of migration steps.
+
 Respond in strict JSON with the following structure:
 {
   "plainEnglishSummary": "2-3 sentences explaining what this code does and why it matters in plain terms",
-  "quantumThreatExplanation": "Clear explanation of how Shor's or Grover's algorithm affects this specific primitive (e.g. Harvest Now Decrypt Later risk vs digital signature forgery)",
+  "quantumThreatExplanation": "Clear explanation of quantum resilience or quantum threat assessment",
   "stepByStepMigrationGuide": ["Step 1", "Step 2", "Step 3", "Step 4"],
   "caveatsAndReviewChecklist": ["Review item 1", "Review item 2", "Review item 3"]
 }
@@ -91,7 +93,22 @@ Respond in strict JSON with the following structure:
     const migrationSteps: string[] = [];
     const reviewChecklist: string[] = [];
 
-    if (finding.ruleId.includes('RSA')) {
+    const isPositivePqc = finding.category === 'pqc-implementation' || finding.quantumImpactType === 'quantum-resistant' || finding.severity === 'Informational';
+
+    if (isPositivePqc) {
+      plainSummary = `Confirmed Quantum-Safe: ${finding.title}. This code element is already protected against quantum attacks; no code migration is needed.`;
+      threatExplanation = `Verified Quantum-Resistant: This primitive conforms to NIST finalized post-quantum standards (FIPS 203 ML-KEM, FIPS 204 ML-DSA, or FIPS 205 SLH-DSA). It is mathematically immune to both classical and Shor's quantum cryptanalysis, earning full compliance credit.`;
+      migrationSteps.push(
+        'Zero Code Changes Required: This implementation is verified quantum-safe.',
+        'Parameter Verification: Confirm key sizes match final NIST FIPS specifications (e.g. ML-KEM-768 or ML-DSA-65).',
+        'Lifecycle Maintenance: Keep upstream package dependencies updated to receive routine maintenance patches and errata.'
+      );
+      reviewChecklist.push(
+        'Confirmed: Zero quantum vulnerability present (100% compliance).',
+        'Ensure CSPRNG high-entropy sources are properly initialized for key generation.',
+        'Maintain crypto-agility configuration so parameters can be updated seamlessly if standards evolve.'
+      );
+    } else if (finding.ruleId.includes('RSA')) {
       plainSummary = `Your code initializes or utilizes RSA asymmetric cryptography. RSA relies on prime factorization, which is secure against classical computers when keys are 2048+ bits, but entirely broken by quantum computers.`;
       threatExplanation = `Shor\'s quantum algorithm factors integers in polynomial time. If this RSA key is used for key encapsulation or encrypting confidential payloads, attackers eavesdropping today can record the ciphertext and decrypt it in the future ("Harvest Now, Decrypt Later"). If used for digital signatures, attackers with a CRQC can forge signatures.`;
       migrationSteps.push(
@@ -128,17 +145,6 @@ Respond in strict JSON with the following structure:
       reviewChecklist.push(
         'Confirm that token verification libraries reject algorithm substitution (e.g. alg: none).',
         'Verify memory constraints since ML-DSA and SLH-DSA public keys and signatures are larger than ECDSA.'
-      );
-    } else if (finding.category === 'pqc-implementation') {
-      plainSummary = `Confirmed post-quantum cryptography indicator (${finding.title}) detected.`;
-      threatExplanation = `This algorithm is designed to remain secure against both classical and quantum computing attacks, adhering to NIST finalized standards (FIPS 203, FIPS 204, or FIPS 205).`;
-      migrationSteps.push(
-        'Verify parameter sets match the final August 2024 NIST FIPS specifications (e.g., ML-KEM-768 or ML-DSA-65).',
-        'Ensure dependencies supplying this implementation are maintained and tracked for cryptographic errata.'
-      );
-      reviewChecklist.push(
-        'Ensure secure random number generator (CSPRNG) entropy sources are validated.',
-        'Review fallback mechanisms if negotiating with legacy clients.'
       );
     } else {
       plainSummary = `Cryptographic pattern detected in ${finding.filePath}.`;
