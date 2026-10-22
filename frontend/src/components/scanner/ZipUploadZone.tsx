@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, FileArchive, CheckCircle2, AlertCircle, Loader2, Sparkles, ShieldAlert, Info, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { UploadCloud, FileArchive, CheckCircle2, AlertCircle, Loader2, Sparkles, ShieldAlert, Info, Copy, Check, ChevronDown, ChevronUp, Terminal } from 'lucide-react';
 import { api } from '../../api/client';
 import { ScanDetailDTO } from '../../types';
 
@@ -160,103 +160,134 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm w-full min-w-0 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
-          <h2 className="text-base font-bold text-navy-950">Initiate Cryptographic Scan</h2>
-          <p className="text-xs text-slate-500">
-            Upload repository ZIP archive for {projectName || 'this project'}. Files are analyzed deterministically without execution.
+          <h2 className="text-base font-bold text-navy-950 flex items-center gap-2">
+            <span>Initiate Cryptographic Scan</span>
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Upload repository ZIP archive for {projectName || 'this project'}. Files are analyzed deterministically without code execution.
           </p>
         </div>
-        <div className="text-right">
-          <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2 py-1 rounded">
-            Max 25MB • ZIP only
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowGuide(!showGuide)}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
+              showGuide
+                ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+                : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+            }`}
+          >
+            <Terminal className="w-3.5 h-3.5" />
+            <span>{showGuide ? 'Hide Zip Guide' : 'Zip Packaging Guide'}</span>
+          </button>
+          <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200/60 px-2.5 py-1 rounded-lg">
+            Max 25MB • ZIP
           </span>
         </div>
       </div>
 
-      {/* Optimization Notice: Universal Exclude Guide for All Supported Languages */}
-      <div className="mb-4 p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 text-amber-900 text-xs shadow-xs">
-        <div className="flex items-start space-x-3">
-          <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <span className="font-bold text-amber-950 text-sm">
-                Important: Exclude dependency &amp; build folders before zipping
-              </span>
-              <span className="text-[10px] bg-amber-200/80 text-amber-950 font-semibold px-2 py-0.5 rounded-full">
-                Supported: JS/TS, Python, Java, Go, Rust, PHP, C/C++, C#
-              </span>
-            </div>
-            <p className="text-amber-800/90 leading-relaxed text-[11px] mt-1.5">
-              Heavy dependency and build directories (<code className="font-mono text-amber-950">node_modules</code>, <code className="font-mono text-amber-950">.venv</code>, <code className="font-mono text-amber-950">target</code>, <code className="font-mono text-amber-950">vendor</code>, <code className="font-mono text-amber-950">build</code>, <code className="font-mono text-amber-950">.git</code>) consume massive memory and cause upload timeouts. QuantumShield scans your source code and manifests (<code className="font-mono text-amber-950">package.json</code>, <code className="font-mono text-amber-950">requirements.txt</code>, <code className="font-mono text-amber-950">pom.xml</code>, <code className="font-mono text-amber-950">go.mod</code>, <code className="font-mono text-amber-950">Cargo.toml</code>, <code className="font-mono text-amber-950">composer.json</code>) directly, so omitting them keeps archives &lt;5MB and scans lightning-fast.
-            </p>
+      {/* Sleek Compact 1-line Tip Bar */}
+      <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200/90 flex flex-col md:flex-row md:items-center justify-between gap-2.5 min-w-0 max-w-full">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
+          <span className="text-amber-500 text-sm shrink-0">💡</span>
+          <p className="text-xs text-slate-600 truncate">
+            <strong className="text-slate-800">Pro-Tip:</strong> Exclude <code className="text-brand-600 font-mono font-medium bg-white px-1 py-0.5 rounded border border-slate-200">node_modules</code>, <code className="text-brand-600 font-mono font-medium bg-white px-1 py-0.5 rounded border border-slate-200">venv</code>, or <code className="text-brand-600 font-mono font-medium bg-white px-1 py-0.5 rounded border border-slate-200">target</code> to keep archives &lt;5MB and scan in seconds.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => copyCommand(UNIVERSAL_ZIP_CMD)}
+            className="px-3 py-1 text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
+            title="Copy universal command to zip repository without dependency directories"
+          >
+            {copiedCmd ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-emerald-700 font-semibold">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-slate-500" />
+                <span>Copy Zip Command</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
-            {/* Universal Command Box */}
-            <div className="mt-2.5 pt-2 border-t border-amber-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex-1 overflow-x-auto">
-                <span className="font-sans text-[10px] text-amber-700 font-semibold uppercase tracking-wider block mb-1">
-                  Universal Zip Command (All Languages):
-                </span>
-                <code className="bg-white/90 border border-amber-300/80 px-2.5 py-1 rounded text-amber-950 select-all font-bold font-mono text-[11px] block whitespace-nowrap overflow-x-auto">
+      {/* Expandable Developer Packaging Guide */}
+      {showGuide && (
+        <div className="mb-5 p-4 rounded-xl bg-slate-900 text-white border border-slate-800 shadow-md min-w-0 max-w-full overflow-hidden transition-all">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-emerald-400" />
+              <h3 className="text-xs font-bold text-slate-100 uppercase tracking-wider">
+                Universal Terminal Zip Command
+              </h3>
+            </div>
+            <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-mono border border-slate-700 shrink-0">
+              JS/TS • Python • Java • Rust • Go • PHP • C/C++ • C#
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-300 leading-relaxed mb-3">
+            Heavy dependency directories consume excessive memory and cause upload timeouts. Run this command inside your project root before uploading:
+          </p>
+
+          {/* Terminal Command Box */}
+          <div className="bg-slate-950 border border-slate-800 rounded-lg p-2.5 mb-3 min-w-0 overflow-hidden">
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0 flex-1 overflow-x-auto scrollbar-thin py-1">
+                <span className="text-emerald-400 font-mono text-xs select-none pl-1">$</span>
+                <code className="text-slate-200 font-mono text-xs select-all whitespace-nowrap">
                   {UNIVERSAL_ZIP_CMD}
                 </code>
               </div>
               <button
                 type="button"
                 onClick={() => copyCommand(UNIVERSAL_ZIP_CMD)}
-                className="inline-flex items-center justify-center space-x-1 px-3 py-1.5 rounded-lg bg-amber-200/70 hover:bg-amber-300/80 text-amber-950 text-xs font-semibold transition-colors cursor-pointer self-start sm:self-end shrink-0"
-                title="Copy universal zip command"
+                className="shrink-0 px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 {copiedCmd ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span className="text-emerald-700 font-semibold">Copied!</span>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-emerald-400">Copied</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-amber-900" />
-                    <span>Copy Command</span>
+                    <Copy className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Copy</span>
                   </>
                 )}
               </button>
             </div>
+          </div>
 
-            {/* Toggle per-language guide */}
-            <div className="mt-2.5 pt-2 border-t border-amber-200/50">
-              <button
-                type="button"
-                onClick={() => setShowGuide(!showGuide)}
-                className="inline-flex items-center space-x-1 text-[11px] font-semibold text-amber-900 hover:text-amber-950 underline decoration-amber-400 hover:decoration-amber-700 cursor-pointer"
-              >
-                <span>{showGuide ? 'Hide language-specific breakdown' : 'View language-specific folders to exclude (Python, Java, Go, Rust, PHP...)'}</span>
-                {showGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              </button>
-
-              {showGuide && (
-                <div className="mt-2.5 grid grid-cols-1 md:grid-cols-2 gap-2 bg-white/70 p-2.5 rounded-lg border border-amber-200/70">
-                  {LANGUAGE_GUIDE.map(item => (
-                    <div key={item.lang} className="p-2 rounded bg-white/90 border border-amber-100 text-[11px]">
-                      <div className="flex items-center justify-between font-semibold text-slate-800">
-                        <span>{item.lang}</span>
-                        <span className="text-[10px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.2 rounded">{item.tag}</span>
-                      </div>
-                      <div className="mt-1 text-slate-600">
-                        <span className="text-red-700 font-medium">Exclude: </span>
-                        <code className="bg-red-50 text-red-800 px-1 py-0.2 rounded font-mono text-[10px]">{item.exclude}</code>
-                      </div>
-                      <div className="mt-0.5 text-slate-600">
-                        <span className="text-emerald-700 font-medium">Keep Manifests: </span>
-                        <span className="text-slate-500 text-[10px]">{item.manifests}</span>
-                      </div>
-                    </div>
-                  ))}
+          {/* Language Breakdown Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
+            {LANGUAGE_GUIDE.map(item => (
+              <div key={item.lang} className="bg-slate-800/80 border border-slate-700/80 rounded-lg p-2.5 min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <span className="font-semibold text-slate-100 truncate text-[11px]">{item.lang}</span>
+                  <span className="text-[9px] bg-slate-900 text-slate-400 px-1.5 py-0.5 rounded font-mono shrink-0">{item.tag}</span>
                 </div>
-              )}
-            </div>
+                <div className="text-[10px] text-slate-300 leading-tight">
+                  <span className="text-rose-400 font-semibold">Exclude: </span>
+                  <span className="font-mono text-slate-300 break-all">{item.exclude}</span>
+                </div>
+                <div className="text-[10px] text-slate-400 leading-tight mt-1">
+                  <span className="text-emerald-400 font-semibold">Keep: </span>
+                  <span className="font-mono text-slate-400 truncate block" title={item.manifests}>{item.manifests}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-start space-x-2">
