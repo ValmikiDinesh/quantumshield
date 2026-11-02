@@ -121,27 +121,47 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link to="/terms" className="hover:text-white text-blue-300">
+                <Link
+                  to="/terms"
+                  onClick={() => window.scrollTo(0, 0)}
+                  className="hover:text-white text-blue-300 transition-colors"
+                >
                   Terms & Conditions
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="hover:text-white text-blue-300">
+                <Link
+                  to="/privacy"
+                  onClick={() => window.scrollTo(0, 0)}
+                  className="hover:text-white text-blue-300 transition-colors"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/refund-policy" className="hover:text-white text-blue-300">
+                <Link
+                  to="/refund-policy"
+                  onClick={() => window.scrollTo(0, 0)}
+                  className="hover:text-white text-blue-300 transition-colors"
+                >
                   Cancellation & Refunds
                 </Link>
               </li>
               <li>
-                <Link to="/shipping-policy" className="hover:text-white text-blue-300">
+                <Link
+                  to="/shipping-policy"
+                  onClick={() => window.scrollTo(0, 0)}
+                  className="hover:text-white text-blue-300 transition-colors"
+                >
                   Shipping & Delivery
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-white text-blue-300">
+                <Link
+                  to="/contact"
+                  onClick={() => window.scrollTo(0, 0)}
+                  className="hover:text-white text-blue-300 transition-colors"
+                >
                   Contact Us & Grievance
                 </Link>
               </li>
