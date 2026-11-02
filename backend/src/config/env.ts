@@ -13,6 +13,9 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   GEMINI_API_KEY: z.string().optional(),
   MAX_UPLOAD_SIZE_MB: z.string().default('250'),
+  RAZORPAY_KEY_ID: z.string().default('rzp_test_placeholder_key'),
+  RAZORPAY_KEY_SECRET: z.string().default('rzp_test_placeholder_secret'),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

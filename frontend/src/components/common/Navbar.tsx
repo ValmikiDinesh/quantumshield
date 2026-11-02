@@ -26,13 +26,12 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
-            <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
-            <a href="#capabilities" className="hover:text-white transition-colors">Supported Languages</a>
-            <a href="#preview" className="hover:text-white transition-colors">Sample Report</a>
-            <a href="#security" className="hover:text-white transition-colors">Security & Privacy</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+          <div className="hidden md:flex items-center space-x-7 text-sm font-medium text-slate-300">
+            <a href="/#how-it-works" className="hover:text-white transition-colors">How It Works</a>
+            <a href="/#capabilities" className="hover:text-white transition-colors">Supported Languages</a>
+            <a href="/#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <Link to="/contact" className="hover:text-white transition-colors">Contact</Link>
+            <a href="/#faq" className="hover:text-white transition-colors">FAQ</a>
           </div>
 
           {/* Action CTAs */}
@@ -110,14 +109,21 @@ export const Navbar: React.FC = () => {
             Security & Privacy
           </a>
           <a
-            href="#pricing"
+            href="/#pricing"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-slate-300 hover:text-white text-base py-2 font-medium"
           >
             Pricing
           </a>
+          <Link
+            to="/contact"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-slate-300 hover:text-white text-base py-2 font-medium"
+          >
+            Contact
+          </Link>
           <a
-            href="#faq"
+            href="/#faq"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-slate-300 hover:text-white text-base py-2 font-medium"
           >

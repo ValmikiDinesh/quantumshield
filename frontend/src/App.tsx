@@ -5,6 +5,11 @@ import { LandingPage } from './pages/public/LandingPage';
 import { LoginPage } from './pages/public/LoginPage';
 import { RegisterPage } from './pages/public/RegisterPage';
 import { ForgotPasswordPage } from './pages/public/ForgotPasswordPage';
+import { TermsPage } from './pages/public/TermsPage';
+import { PrivacyPolicyPage } from './pages/public/PrivacyPolicyPage';
+import { RefundPolicyPage } from './pages/public/RefundPolicyPage';
+import { ShippingPolicyPage } from './pages/public/ShippingPolicyPage';
+import { ContactPage } from './pages/public/ContactPage';
 import { DashboardPage } from './pages/app/DashboardPage';
 import { ProjectsPage } from './pages/app/ProjectsPage';
 import { ProjectDetailPage } from './pages/app/ProjectDetailPage';
@@ -48,6 +53,11 @@ export const App: React.FC = () => {
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/refund-policy" element={<RefundPolicyPage />} />
+          <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route
             path="/login"
             element={

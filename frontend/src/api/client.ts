@@ -238,4 +238,53 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ name }),
     }),
+
+  // --- RAZORPAY BILLING ---
+  createRazorpayOrder: (plan: PlanTier) =>
+    request<{
+      orderId: string;
+      amountPaise: number;
+      amountINR: number;
+      currency: string;
+      plan: PlanTier;
+      keyId: string;
+      merchantName: string;
+      description: string;
+      customer: { name: string; email: string; contact: string };
+    }>('/billing/razorpay/order', {
+      method: 'POST',
+      body: JSON.stringify({ plan }),
+    }),
+
+  verifyRazorpayPayment: (payload: {
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+    plan: PlanTier;
+  }) =>
+    request<{
+      plan: PlanTier;
+      paymentId: string;
+      orderId: string;
+      amountINR: number;
+      paidAt: string;
+    }>('/billing/razorpay/verify', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  getBillingHistory: () =>
+    request<
+      Array<{
+        id: string;
+        orderId: string;
+        paymentId?: string;
+        plan: string;
+        amountINR: number;
+        currency: string;
+        status: string;
+        receipt: string;
+        createdAt: string;
+      }>
+    >('/billing/history'),
 };

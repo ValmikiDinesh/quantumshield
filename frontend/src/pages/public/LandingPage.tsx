@@ -362,7 +362,7 @@ export const LandingPage: React.FC = () => {
                 <h4 className="text-base font-bold text-navy-950">Free Community</h4>
                 <p className="text-xs text-slate-500 mt-1">For open-source & developers</p>
                 <div className="my-4">
-                  <span className="text-3xl font-extrabold text-navy-950">$0</span>
+                  <span className="text-3xl font-extrabold text-navy-950">₹0</span>
                   <span className="text-xs text-slate-500"> / month</span>
                 </div>
                 <ul className="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-4">
@@ -401,8 +401,9 @@ export const LandingPage: React.FC = () => {
                 <h4 className="text-base font-bold text-navy-950">Developer Pro</h4>
                 <p className="text-xs text-slate-500 mt-1">For growing teams & startups</p>
                 <div className="my-4">
-                  <span className="text-3xl font-extrabold text-navy-950">$49</span>
+                  <span className="text-3xl font-extrabold text-navy-950">₹3,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
+                  <span className="block text-[11px] text-slate-400 mt-0.5">+ 18% GST applicable</span>
                 </div>
                 <ul className="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-4">
                   <li className="flex items-center space-x-2">
@@ -441,8 +442,9 @@ export const LandingPage: React.FC = () => {
                 <h4 className="text-base font-bold text-navy-950">Team Security</h4>
                 <p className="text-xs text-slate-500 mt-1">For multi-repo organizations</p>
                 <div className="my-4">
-                  <span className="text-3xl font-extrabold text-navy-950">$199</span>
+                  <span className="text-3xl font-extrabold text-navy-950">₹15,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
+                  <span className="block text-[11px] text-slate-400 mt-0.5">+ 18% GST applicable</span>
                 </div>
                 <ul className="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-4">
                   <li className="flex items-center space-x-2">
@@ -477,8 +479,9 @@ export const LandingPage: React.FC = () => {
                 <h4 className="text-base font-bold text-navy-950">Enterprise Shield</h4>
                 <p className="text-xs text-slate-500 mt-1">For regulated industries</p>
                 <div className="my-4">
-                  <span className="text-3xl font-extrabold text-navy-950">$999</span>
+                  <span className="text-3xl font-extrabold text-navy-950">₹39,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
+                  <span className="block text-[11px] text-slate-400 mt-0.5">+ 18% GST applicable</span>
                 </div>
                 <ul className="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-4">
                   <li className="flex items-center space-x-2">
@@ -500,12 +503,23 @@ export const LandingPage: React.FC = () => {
                 </ul>
               </div>
               <Link
-                to="/register"
+                to="/contact"
                 className="mt-6 w-full text-center py-2 px-3 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-800"
               >
                 Contact Sales
               </Link>
             </div>
+          </div>
+
+          {/* Payment Trust and Tax Disclosure */}
+          <div className="mt-8 p-4 bg-white rounded-xl border border-slate-200 text-center max-w-3xl mx-auto shadow-sm">
+            <p className="text-xs text-slate-600 font-medium">
+              🇮🇳 All prices are billed in Indian National Rupees (INR). GST (18%) applicable at checkout.
+            </p>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Instant digital delivery upon authorization. Covered by our <strong>7-Day Satisfaction Money-Back Guarantee</strong>.
+              Payments processed securely via <strong>Razorpay</strong> (UPI, Rupay, Visa, MasterCard, NetBanking).
+            </p>
           </div>
         </div>
       </section>
@@ -555,9 +569,8 @@ export const LandingPage: React.FC = () => {
                 >
                   <span>{faq.q}</span>
                   <ChevronDown
-                    className={`w-4 h-4 text-slate-400 transition-transform ${
-                      openFaq === idx ? 'rotate-180 text-brand-600' : ''
-                    }`}
+                    className={`w-4 h-4 text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180 text-brand-600' : ''
+                      }`}
                   />
                 </button>
                 {openFaq === idx && (

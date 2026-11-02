@@ -22,6 +22,11 @@ import {
   OrganizationController,
   updatePlanSchema,
 } from '../controllers/organizationController';
+import {
+  BillingController,
+  createRazorpayOrderSchema,
+  verifyRazorpayPaymentSchema,
+} from '../controllers/billingController';
 import { openApiSpec } from '../docs/openapi';
 
 const router = Router();
@@ -114,5 +119,20 @@ router.get('/dashboard/stats', requireAuth, DashboardController.getStats);
 router.get('/organizations/current', requireAuth, OrganizationController.getCurrent);
 router.patch('/organizations/current', requireAuth, OrganizationController.updateProfile);
 router.patch('/organizations/current/plan', requireAuth, validate(updatePlanSchema), OrganizationController.updatePlan);
+
+// Razorpay Billing & Payment Gateway
+router.post(
+  '/billing/razorpay/order',
+  requireAuth,
+  validate(createRazorpayOrderSchema),
+  BillingController.createOrder
+);
+router.post(
+  '/billing/razorpay/verify',
+  requireAuth,
+  validate(verifyRazorpayPaymentSchema),
+  BillingController.verifyPayment
+);
+router.get('/billing/history', requireAuth, BillingController.getHistory);
 
 export default router;
