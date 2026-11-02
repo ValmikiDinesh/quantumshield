@@ -111,7 +111,6 @@ export const Footer: React.FC = () => {
               <li><a href="/#security" className="hover:text-white">Zero Execution Policy</a></li>
               <li><a href="/#pricing" className="hover:text-white">Plans & Pricing (INR)</a></li>
               <li><Link to="/contact" className="hover:text-white">Enterprise Inquiries</Link></li>
-              <li><a href="/api/docs/openapi.json" target="_blank" className="hover:text-white">OpenAPI Documentation</a></li>
             </ul>
           </div>
 
