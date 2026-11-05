@@ -151,8 +151,11 @@ export const OrganizationBillingPage: React.FC = () => {
       // 3. Open Official Razorpay Checkout Modal
       const keyId =
         orderData.keyId ||
-        (import.meta as any).env?.VITE_RAZORPAY_KEY_ID ||
-        'rzp_test_TwUJlg8nex67dH';
+        (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
+
+      if (!keyId) {
+        throw new Error('Razorpay Key ID is not configured. Please check your billing settings.');
+      }
 
       const options = {
         key: keyId,
