@@ -37,14 +37,16 @@ export class BillingController {
    */
   public static async createOrder(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const orgId = req.user!.organizationId;
-      const userId = req.user!.userId;
-      const userEmail = req.user!.email;
+      const orgId = req.user?.organizationId;
+      const userId = req.user?.userId;
+      const userEmail = req.user?.email || 'customer@quantumshieldscan.com';
 
-      const org = await Organization.findById(orgId);
-      if (!org) {
-        res.status(404).json({ success: false, error: 'Organization not found' });
-        return;
+      if (orgId) {
+        const org = await Organization.findById(orgId);
+        if (!org) {
+          res.status(404).json({ success: false, error: 'Organization not found' });
+          return;
+        }
       }
 
       let amountPaise = 0;
