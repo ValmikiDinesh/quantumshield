@@ -149,8 +149,13 @@ export const OrganizationBillingPage: React.FC = () => {
       }
 
       // 3. Open Official Razorpay Checkout Modal
+      const keyId =
+        orderData.keyId ||
+        (import.meta as any).env?.VITE_RAZORPAY_KEY_ID ||
+        'rzp_test_TwUJlg8nex67dH';
+
       const options = {
-        key: orderData.keyId,
+        key: keyId,
         amount: orderData.amountPaise,
         currency: orderData.currency || 'INR',
         name: orderData.merchantName || 'Valmiki Softwares',

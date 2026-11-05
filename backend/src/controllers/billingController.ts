@@ -14,23 +14,29 @@ export const PLAN_PRICES_INR: Record<Exclude<PlanTier, 'free'>, { rupees: number
 };
 
 export const createRazorpayOrderSchema = z.object({
-  plan: z.enum(['developer', 'team', 'enterprise']),
+  plan: z.enum(['developer', 'team', 'enterprise']).optional(),
+  amount: z.number().min(100).optional(),
+  currency: z.string().optional(),
+  receipt: z.string().optional(),
 });
 
 export const verifyRazorpayPaymentSchema = z.object({
-  razorpayOrderId: z.string().min(1),
-  razorpayPaymentId: z.string().min(1),
-  razorpaySignature: z.string().min(1),
-  plan: z.enum(['developer', 'team', 'enterprise']),
+  razorpay_order_id: z.string().optional(),
+  razorpayOrderId: z.string().optional(),
+  razorpay_payment_id: z.string().optional(),
+  razorpayPaymentId: z.string().optional(),
+  razorpay_signature: z.string().optional(),
+  razorpaySignature: z.string().optional(),
+  plan: z.enum(['developer', 'team', 'enterprise']).optional(),
 });
 
 export class BillingController {
   /**
-   * Initializes a Razorpay order for subscription upgrade.
+   * Initializes a Razorpay order for subscription upgrade or custom amount.
+   * Endpoint: POST /api/create-order or POST /api/billing/razorpay/order
    */
   public static async createOrder(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const { plan } = req.body as { plan: Exclude<PlanTier, 'free'> };
       const orgId = req.user!.organizationId;
       const userId = req.user!.userId;
       const userEmail = req.user!.email;
@@ -41,34 +47,53 @@ export class BillingController {
         return;
       }
 
-      const planConfig = PLAN_PRICES_INR[plan];
-      if (!planConfig) {
-        res.status(400).json({ success: false, error: 'Invalid plan selected' });
+      let amountPaise = 0;
+      let amountINR = 0;
+      let selectedPlan: PlanTier = 'developer';
+
+      if (req.body.amount) {
+        amountPaise = Number(req.body.amount);
+        if (isNaN(amountPaise) || amountPaise < 100) {
+          res.status(400).json({ success: false, error: 'Amount must be at least 100 paise' });
+          return;
+        }
+        amountINR = Math.round(amountPaise / 100);
+      } else if (req.body.plan) {
+        selectedPlan = req.body.plan;
+        const planConfig = PLAN_PRICES_INR[selectedPlan as Exclude<PlanTier, 'free'>];
+        if (!planConfig) {
+          res.status(400).json({ success: false, error: 'Invalid plan selected' });
+          return;
+        }
+        amountPaise = planConfig.paise;
+        amountINR = planConfig.rupees;
+      } else {
+        res.status(400).json({ success: false, error: 'Either plan or amount is required' });
         return;
       }
 
-      const receipt = `rcpt_${Date.now()}_${orgId.toString().slice(-4)}`;
+      const receipt = req.body.receipt || `rcpt_${Date.now()}_${orgId.toString().slice(-4)}`;
 
       const rzpOrder = await RazorpayService.createOrder({
-        amountPaise: planConfig.paise,
-        currency: 'INR',
+        amountPaise,
+        currency: req.body.currency || 'INR',
         receipt,
         notes: {
           organizationId: orgId.toString(),
-          plan,
+          plan: selectedPlan,
           entity: 'Valmiki Softwares - QuantumShield',
         },
       });
 
-      // Save initial payment record
+      // Save initial payment record in database
       await Payment.create({
         organizationId: orgId,
         userId,
         razorpayOrderId: rzpOrder.id,
-        plan,
-        amount: planConfig.paise,
-        amountINR: planConfig.rupees,
-        currency: 'INR',
+        plan: selectedPlan,
+        amount: amountPaise,
+        amountINR,
+        currency: req.body.currency || 'INR',
         status: 'created',
         receipt,
         customerEmail: userEmail,
@@ -77,15 +102,20 @@ export class BillingController {
 
       res.status(200).json({
         success: true,
+        order_id: rzpOrder.id,
+        id: rzpOrder.id,
+        amount: rzpOrder.amount,
+        currency: rzpOrder.currency,
+        key_id: env.RAZORPAY_KEY_ID,
         data: {
           orderId: rzpOrder.id,
-          amountPaise: planConfig.paise,
-          amountINR: planConfig.rupees,
-          currency: 'INR',
-          plan,
+          amountPaise,
+          amountINR,
+          currency: rzpOrder.currency,
+          plan: selectedPlan,
           keyId: env.RAZORPAY_KEY_ID,
           merchantName: 'Valmiki Softwares',
-          description: `QuantumShield ${plan.toUpperCase()} Plan Subscription`,
+          description: `QuantumShield ${selectedPlan.toUpperCase()} Plan Subscription`,
           customer: {
             name: userEmail.split('@')[0],
             email: userEmail,
@@ -100,46 +130,64 @@ export class BillingController {
   }
 
   /**
-   * Verifies payment signature and provisions the upgraded subscription.
+   * Verifies HMAC-SHA256 payment signature and provisions the upgraded subscription.
+   * Endpoint: POST /api/verify-payment or POST /api/billing/razorpay/verify
    */
   public static async verifyPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const { razorpayOrderId, razorpayPaymentId, razorpaySignature, plan } = req.body;
+      const orderId = req.body.razorpay_order_id || req.body.razorpayOrderId;
+      const paymentId = req.body.razorpay_payment_id || req.body.razorpayPaymentId;
+      const signature = req.body.razorpay_signature || req.body.razorpaySignature;
+      const plan = req.body.plan;
       const orgId = req.user!.organizationId;
 
-      const payment = await Payment.findOne({ razorpayOrderId, organizationId: orgId });
-      if (!payment) {
-        res.status(404).json({ success: false, error: 'Payment order record not found' });
+      if (!orderId || !paymentId || !signature) {
+        res.status(400).json({
+          success: false,
+          error: 'Missing required parameters: razorpay_order_id, razorpay_payment_id, and razorpay_signature are required',
+        });
         return;
       }
 
       const isValid = RazorpayService.verifyPaymentSignature({
-        orderId: razorpayOrderId,
-        paymentId: razorpayPaymentId,
-        signature: razorpaySignature,
+        orderId,
+        paymentId,
+        signature,
       });
 
       if (!isValid) {
-        payment.status = 'failed';
-        await payment.save();
-        res.status(400).json({ success: false, error: 'Cryptographic signature verification failed. Payment cannot be verified.' });
+        await Payment.findOneAndUpdate(
+          { razorpayOrderId: orderId, organizationId: orgId },
+          { status: 'failed', razorpayPaymentId: paymentId, razorpaySignature: signature }
+        );
+        res.status(400).json({
+          success: false,
+          error: 'Cryptographic signature verification failed. Payment cannot be verified.',
+        });
         return;
       }
 
       // Mark payment as paid
-      payment.status = 'paid';
-      payment.razorpayPaymentId = razorpayPaymentId;
-      payment.razorpaySignature = razorpaySignature;
-      await payment.save();
+      const payment = await Payment.findOneAndUpdate(
+        { razorpayOrderId: orderId, organizationId: orgId },
+        {
+          status: 'paid',
+          razorpayPaymentId: paymentId,
+          razorpaySignature: signature,
+        },
+        { new: true }
+      );
 
-      // Upgrade organization limits
-      const limits = PLAN_LIMITS[plan as PlanTier];
-      const org = await Organization.findById(orgId);
-      if (org) {
-        org.plan = plan as PlanTier;
-        org.maxProjects = limits.maxProjects;
-        org.maxScansPerMonth = limits.maxScansPerMonth;
-        await org.save();
+      // Upgrade organization limits if plan is specified
+      if (plan && PLAN_LIMITS[plan as PlanTier]) {
+        const limits = PLAN_LIMITS[plan as PlanTier];
+        const org = await Organization.findById(orgId);
+        if (org) {
+          org.plan = plan as PlanTier;
+          org.maxProjects = limits.maxProjects;
+          org.maxScansPerMonth = limits.maxScansPerMonth;
+          await org.save();
+        }
       }
 
       // Audit log
@@ -151,20 +199,20 @@ export class BillingController {
         targetId: orgId.toString(),
         metadata: {
           plan,
-          amountINR: payment.amountINR,
-          razorpayOrderId,
-          razorpayPaymentId,
+          amountINR: payment?.amountINR || 0,
+          razorpayOrderId: orderId,
+          razorpayPaymentId: paymentId,
         },
       });
 
       res.status(200).json({
         success: true,
-        message: `Payment successful! Upgraded to ${plan.toUpperCase()} tier.`,
+        message: 'Payment verified successfully',
         data: {
           plan,
-          paymentId: razorpayPaymentId,
-          orderId: razorpayOrderId,
-          amountINR: payment.amountINR,
+          paymentId,
+          orderId,
+          amountINR: payment?.amountINR || 0,
           paidAt: new Date().toISOString(),
         },
       });
@@ -204,4 +252,3 @@ export class BillingController {
     }
   }
 }
-

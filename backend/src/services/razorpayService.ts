@@ -29,6 +29,10 @@ export class RazorpayService {
    * Creates an order with Razorpay REST API or returns an authenticated test order in sandbox/dev mode.
    */
   public static async createOrder(params: CreateOrderParams): Promise<RazorpayOrderResponse> {
+    if (!params.amountPaise || params.amountPaise < 100) {
+      throw new Error('Invalid order amount: Minimum amount is 100 paise');
+    }
+
     const isLiveKey =
       env.RAZORPAY_KEY_ID &&
       !env.RAZORPAY_KEY_ID.includes('placeholder') &&

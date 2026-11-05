@@ -240,6 +240,34 @@ export const api = {
     }),
 
   // --- RAZORPAY BILLING ---
+  createOrder: (data: { amount?: number; currency?: string; receipt?: string; plan?: PlanTier }) =>
+    request<{
+      order_id: string;
+      id: string;
+      amount: number;
+      currency: string;
+      key_id: string;
+      data: any;
+    }>('/create-order', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  verifyPayment: (payload: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    plan?: PlanTier;
+  }) =>
+    request<{
+      success: boolean;
+      message: string;
+      data: any;
+    }>('/verify-payment', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
   createRazorpayOrder: (plan: PlanTier) =>
     request<{
       orderId: string;

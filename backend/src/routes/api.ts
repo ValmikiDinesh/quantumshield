@@ -120,7 +120,19 @@ router.get('/organizations/current', requireAuth, OrganizationController.getCurr
 router.patch('/organizations/current', requireAuth, OrganizationController.updateProfile);
 router.patch('/organizations/current/plan', requireAuth, validate(updatePlanSchema), OrganizationController.updatePlan);
 
-// Razorpay Billing & Payment Gateway
+// Razorpay Standard Checkout & Billing Endpoints
+router.post(
+  '/create-order',
+  requireAuth,
+  validate(createRazorpayOrderSchema),
+  BillingController.createOrder
+);
+router.post(
+  '/verify-payment',
+  requireAuth,
+  validate(verifyRazorpayPaymentSchema),
+  BillingController.verifyPayment
+);
 router.post(
   '/billing/razorpay/order',
   requireAuth,
