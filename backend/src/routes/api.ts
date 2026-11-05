@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth, optionalAuth } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { authLimiter, scanLimiter } from '../middleware/rateLimiter';
 
@@ -123,13 +123,13 @@ router.patch('/organizations/current/plan', requireAuth, validate(updatePlanSche
 // Razorpay Standard Checkout & Billing Endpoints
 router.post(
   '/create-order',
-  requireAuth,
+  optionalAuth,
   validate(createRazorpayOrderSchema),
   BillingController.createOrder
 );
 router.post(
   '/verify-payment',
-  requireAuth,
+  optionalAuth,
   validate(verifyRazorpayPaymentSchema),
   BillingController.verifyPayment
 );

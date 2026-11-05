@@ -2,8 +2,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { PlanTier } from '../types';
 
 export interface IPayment extends Document {
-  organizationId: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
+  organizationId?: mongoose.Types.ObjectId;
+  userId?: mongoose.Types.ObjectId;
   razorpayOrderId: string;
   razorpayPaymentId?: string;
   razorpaySignature?: string;
@@ -21,8 +21,8 @@ export interface IPayment extends Document {
 
 const PaymentSchema: Schema = new Schema(
   {
-    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: false, index: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
     razorpayOrderId: { type: String, required: true, unique: true, index: true },
     razorpayPaymentId: { type: String, index: true },
     razorpaySignature: { type: String },

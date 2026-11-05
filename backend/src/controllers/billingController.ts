@@ -72,14 +72,14 @@ export class BillingController {
         return;
       }
 
-      const receipt = req.body.receipt || `rcpt_${Date.now()}_${orgId.toString().slice(-4)}`;
+      const receipt = req.body.receipt || `rcpt_${Date.now()}_${orgId ? orgId.toString().slice(-4) : 'std'}`;
 
       const rzpOrder = await RazorpayService.createOrder({
         amountPaise,
         currency: req.body.currency || 'INR',
         receipt,
         notes: {
-          organizationId: orgId.toString(),
+          organizationId: orgId ? orgId.toString() : 'guest',
           plan: selectedPlan,
           entity: 'Valmiki Softwares - QuantumShield',
         },
@@ -87,8 +87,8 @@ export class BillingController {
 
       // Save initial payment record in database
       await Payment.create({
-        organizationId: orgId,
-        userId,
+        organizationId: orgId || undefined,
+        userId: userId || undefined,
         razorpayOrderId: rzpOrder.id,
         plan: selectedPlan,
         amount: amountPaise,
@@ -139,7 +139,8 @@ export class BillingController {
       const paymentId = req.body.razorpay_payment_id || req.body.razorpayPaymentId;
       const signature = req.body.razorpay_signature || req.body.razorpaySignature;
       const plan = req.body.plan;
-      const orgId = req.user!.organizationId;
+      const orgId = req.user?.organizationId;
+      const userId = req.user?.userId;
 
       if (!orderId || !paymentId || !signature) {
         res.status(400).json({
@@ -157,7 +158,7 @@ export class BillingController {
 
       if (!isValid) {
         await Payment.findOneAndUpdate(
-          { razorpayOrderId: orderId, organizationId: orgId },
+          { razorpayOrderId: orderId },
           { status: 'failed', razorpayPaymentId: paymentId, razorpaySignature: signature }
         );
         res.status(400).json({
@@ -169,7 +170,7 @@ export class BillingController {
 
       // Mark payment as paid
       const payment = await Payment.findOneAndUpdate(
-        { razorpayOrderId: orderId, organizationId: orgId },
+        { razorpayOrderId: orderId },
         {
           status: 'paid',
           razorpayPaymentId: paymentId,
@@ -178,8 +179,8 @@ export class BillingController {
         { new: true }
       );
 
-      // Upgrade organization limits if plan is specified
-      if (plan && PLAN_LIMITS[plan as PlanTier]) {
+      // Upgrade organization limits if plan is specified and orgId is available
+      if (orgId && plan && PLAN_LIMITS[plan as PlanTier]) {
         const limits = PLAN_LIMITS[plan as PlanTier];
         const org = await Organization.findById(orgId);
         if (org) {
@@ -190,20 +191,22 @@ export class BillingController {
         }
       }
 
-      // Audit log
-      await AuditLog.create({
-        organizationId: orgId,
-        userId: req.user!.userId,
-        action: 'PAYMENT_COMPLETED_PLAN_UPGRADED',
-        targetType: 'Organization',
-        targetId: orgId.toString(),
-        metadata: {
-          plan,
-          amountINR: payment?.amountINR || 0,
-          razorpayOrderId: orderId,
-          razorpayPaymentId: paymentId,
-        },
-      });
+      // Audit log if orgId is available
+      if (orgId && userId) {
+        await AuditLog.create({
+          organizationId: orgId,
+          userId,
+          action: 'PAYMENT_COMPLETED_PLAN_UPGRADED',
+          targetType: 'Organization',
+          targetId: orgId.toString(),
+          metadata: {
+            orderId,
+            paymentId,
+            plan: plan || payment?.plan || 'developer',
+            amount: payment?.amount,
+          },
+        });
+      }
 
       res.status(200).json({
         success: true,

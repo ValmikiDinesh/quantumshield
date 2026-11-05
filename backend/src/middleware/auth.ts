@@ -31,3 +31,25 @@ export function requireAuth(
     });
   }
 }
+
+export function optionalAuth(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, env.JWT_SECRET, {
+      algorithms: ['HS256'],
+    }) as AuthenticatedUser;
+    req.user = decoded;
+  } catch {
+    // Ignore invalid tokens for optional auth
+  }
+  next();
+}
