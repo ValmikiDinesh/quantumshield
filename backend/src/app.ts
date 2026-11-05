@@ -12,11 +12,14 @@ const app = express();
 // Trust reverse proxy (Render, Cloudflare, AWS ALB) for accurate client IP resolution
 app.set('trust proxy', 1);
 
-// Security headers
+// Security headers (configured to permit Razorpay Standard Checkout 3DS bank popups)
 app.use(
   helmet({
     contentSecurityPolicy: false, // Allows flexible API and static asset usage
     crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false, // Prevents blocking Razorpay 3D Secure / OTP bank popups (fixes about:blank)
+    crossOriginResourcePolicy: false,
+    originAgentCluster: false,
   })
 );
 
