@@ -9,6 +9,7 @@ import { ReadinessScoreGauge } from '../../components/common/ReadinessScoreGauge
 import {
   FolderGit2,
   FileScan,
+  Shield,
   ShieldAlert,
   ShieldCheck,
   Plus,
@@ -22,6 +23,12 @@ import {
   GitCompare,
   TrendingUp,
   Sparkles,
+  KeyRound,
+  EyeOff,
+  Lock,
+  Cpu,
+  FileCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   BarChart,
@@ -112,8 +119,8 @@ export const DashboardPage: React.FC = () => {
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header
-          title="Security Overview & PQC Posture"
-          subtitle="Enterprise cryptographic discovery, vulnerability tracking & NIST migration readiness"
+          title="Dual-Shield Security & Post-Quantum Posture"
+          subtitle="Unified detection: Present-day hardcoded secrets, OWASP vulnerabilities & NIST FIPS 203/204/205 quantum readiness"
         />
 
         <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
@@ -197,6 +204,94 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
                     <ShieldAlert className="w-6 h-6" />
+                  </div>
+                </div>
+              </div>
+
+              {/* DUAL-SHIELD THREAT & COMPLIANCE POSTURE */}
+              <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 rounded-2xl border border-navy-800 p-6 text-white shadow-md">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-4 border-b border-navy-800">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white">
+                      <Shield className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                        Dual-Shield Defense Architecture
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        Unified protection: Present-Day Cyber Threat Mitigation + Future Post-Quantum Resilience
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 text-xs bg-navy-800/80 px-3 py-1.5 rounded-lg border border-navy-700 text-emerald-400">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span><strong>Zero-Liability Advisory:</strong> 100% read-only pattern analysis (0 code changes, 0 automated PRs)</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Shield 1 Active Coverage */}
+                  <div className="bg-navy-900/60 rounded-xl p-4 border border-navy-800/80 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
+                          Shield 1 • Active Threat Defense
+                        </span>
+                        <span className="text-xs font-semibold text-slate-300">Present-Day SAST</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-white mb-2">
+                        Hardcoded Secrets, OWASP Top 10 & PII Safeguards
+                      </h4>
+                      <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                        Continuously inspects repositories for live AWS/Razorpay/Stripe secrets, Server-Side Request Forgery (SSRF), IDOR, SQL injection, disabled TLS certificates, and PII leaks (Aadhaar & PAN).
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-navy-800/60">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-navy-800 text-slate-300">AWS / Razorpay Keys</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-navy-800 text-slate-300">OWASP A10 SAST</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-navy-800 text-slate-300">Disabled TLS Defenses</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-navy-800 text-slate-300">Zero-Leak Masking</span>
+                    </div>
+                  </div>
+
+                  {/* Shield 2 Quantum Readiness */}
+                  <div className="bg-navy-900/60 rounded-xl p-4 border border-navy-800/80 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800">
+                          Shield 2 • Post-Quantum Readiness
+                        </span>
+                        <span className="text-xs font-semibold text-slate-300">NIST FIPS 203/204/205</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-white mb-2">
+                        Shor's Algorithm & Harvest Now, Decrypt Later (HNDL)
+                      </h4>
+                      <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                        Audits public-key cryptography (RSA, ECC, ECDSA, ECDH) vulnerable to cryptanalytically relevant quantum computers and tracks migration to ML-KEM and ML-DSA standards.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-navy-800/60">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-navy-800 text-slate-300">Shor Vulnerability Index</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-navy-800 text-slate-300">HNDL Risk Scoring</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-navy-800 text-slate-300">ML-KEM (FIPS 203)</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-navy-800 text-slate-300">ML-DSA (FIPS 204)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Compliance Framework Alignment Bar */}
+                <div className="mt-4 pt-4 border-t border-navy-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center space-x-2 text-slate-300">
+                    <FileCheck className="w-4 h-4 text-brand-400" />
+                    <span className="font-semibold">Regulatory Alignment:</span>
+                    <span className="text-slate-400">All findings map to official mandates:</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-900/60 text-blue-200 border border-blue-800">SOC 2 Type II</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900/60 text-emerald-200 border border-emerald-800">ISO/IEC 27001:2022</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-900/60 text-indigo-200 border border-indigo-800">PCI-DSS v4.0</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-900/60 text-orange-200 border border-orange-800">India DPDP Act 2023</span>
                   </div>
                 </div>
               </div>

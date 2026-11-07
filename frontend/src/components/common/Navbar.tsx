@@ -19,14 +19,15 @@ export const Navbar: React.FC = () => {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-lg tracking-tight text-white">QuantumShield</span>
-                <span className="text-[10px] bg-navy-800 text-blue-300 px-1.5 py-0.5 rounded border border-navy-700">PQC</span>
+                <span className="text-[9px] font-bold bg-navy-800 text-emerald-400 px-1.5 py-0.5 rounded border border-navy-700">DUAL-SHIELD</span>
               </div>
               <p className="text-[11px] text-slate-400 font-medium">by Valmiki Softwares</p>
             </div>
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center space-x-7 text-sm font-medium text-slate-300">
+          <div className="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-300">
+            <a href="/#dual-shield" className="hover:text-white transition-colors">Dual-Shield</a>
             <a href="/#how-it-works" className="hover:text-white transition-colors">How It Works</a>
             <a href="/#capabilities" className="hover:text-white transition-colors">Supported Languages</a>
             <a href="/#pricing" className="hover:text-white transition-colors">Pricing</a>
