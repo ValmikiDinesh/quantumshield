@@ -102,6 +102,7 @@ export class ScannerEngine {
               recommendedRemediation: rule.recommendedRemediation,
               referenceLinks: rule.referenceLinks,
               quantumImpactType: rule.quantumImpactType,
+              compliance: rule.compliance,
               timestamp: new Date().toISOString(),
             });
 

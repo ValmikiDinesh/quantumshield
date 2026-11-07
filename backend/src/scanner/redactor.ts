@@ -23,6 +23,38 @@ export class SecretRedactor {
       pattern: /(sk-[a-zA-Z0-9]{32,})/g,
       replacement: '[REDACTED_API_KEY]',
     },
+    {
+      pattern: /(rzp_(?:live|test)_[a-zA-Z0-9]{14})/g,
+      replacement: '[REDACTED_RAZORPAY_KEY]',
+    },
+    {
+      pattern: /((?:sk|rk)_(?:live|test)_[0-9a-zA-Z]{24,})/g,
+      replacement: '[REDACTED_STRIPE_KEY]',
+    },
+    {
+      pattern: /(AIza[0-9A-Za-z\-_]{35})/g,
+      replacement: '[REDACTED_GOOGLE_KEY]',
+    },
+    {
+      pattern: /(xox[baprs]-[0-9a-zA-Z]{10,48})/g,
+      replacement: '[REDACTED_SLACK_TOKEN]',
+    },
+    {
+      pattern: /((?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis):\/\/[^:\s]+:)([^@\s]+)(@)/gi,
+      replacement: '$1[REDACTED_DB_PASSWORD]$3',
+    },
+    {
+      pattern: /\b([2-9][0-9]{3}[\s-]?[0-9]{4}[\s-]?[0-9]{4})\b/g,
+      replacement: '[REDACTED_AADHAAR]',
+    },
+    {
+      pattern: /\b([A-Z]{5}[0-9]{4}[A-Z])\b/g,
+      replacement: '[REDACTED_PAN_CARD]',
+    },
+    {
+      pattern: /\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b/g,
+      replacement: '[REDACTED_CREDIT_CARD]',
+    },
   ];
 
   /**

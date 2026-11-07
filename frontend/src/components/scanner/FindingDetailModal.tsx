@@ -257,6 +257,43 @@ export const FindingDetailModal: React.FC<Props> = ({ finding, scanId, onClose }
                 </p>
               </div>
 
+              {/* Compliance & Regulatory Standards Mapping */}
+              {finding.compliance && Object.keys(finding.compliance).length > 0 && (
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-2">
+                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <BookmarkCheck className="w-4 h-4 text-brand-600" />
+                    <span>Regulatory & Security Standards Mapping</span>
+                  </h4>
+                  <div className="flex flex-wrap gap-2 pt-0.5">
+                    {finding.compliance.soc2?.map((c) => (
+                      <span key={c} className="px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded-md text-[11px] font-semibold">
+                        SOC 2: {c}
+                      </span>
+                    ))}
+                    {finding.compliance.iso27001?.map((c) => (
+                      <span key={c} className="px-2.5 py-1 bg-purple-50 text-purple-800 border border-purple-200 rounded-md text-[11px] font-semibold">
+                        ISO 27001: {c}
+                      </span>
+                    ))}
+                    {finding.compliance.pciDss?.map((c) => (
+                      <span key={c} className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-md text-[11px] font-semibold">
+                        PCI-DSS: {c}
+                      </span>
+                    ))}
+                    {finding.compliance.dpdpAct?.map((c) => (
+                      <span key={c} className="px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-md text-[11px] font-semibold">
+                        DPDP Act: {c}
+                      </span>
+                    ))}
+                    {finding.compliance.nist?.map((c) => (
+                      <span key={c} className="px-2.5 py-1 bg-slate-100 text-slate-800 border border-slate-300 rounded-md text-[11px] font-semibold">
+                        NIST: {c}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Quantum Migration Relevance */}
               <div className={`p-4 rounded-xl shadow-2xs ${
                 isPositivePqc

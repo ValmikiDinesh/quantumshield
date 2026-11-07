@@ -45,7 +45,20 @@ export type FindingCategory =
   | 'cryptographic-api'
   | 'protocol-config'
   | 'pqc-implementation'
-  | 'weak-legacy';
+  | 'weak-legacy'
+  | 'hardcoded-secret'
+  | 'owasp-top-10'
+  | 'insecure-transport'
+  | 'pii-financial-leak'
+  | 'supply-chain-ai';
+
+export interface ComplianceMapping {
+  iso27001?: string[];
+  soc2?: string[];
+  pciDss?: string[];
+  dpdpAct?: string[];
+  nist?: string[];
+}
 
 export type SeverityLevel = 'Critical' | 'High' | 'Medium' | 'Low' | 'Informational';
 
@@ -82,6 +95,7 @@ export interface FindingDTO {
   recommendedRemediation: string;
   referenceLinks: ReferenceLink[];
   quantumImpactType: 'harvest-now-decrypt-later' | 'future-forgeability' | 'crypto-agility' | 'quantum-resistant' | 'not-quantum-specific';
+  compliance?: ComplianceMapping;
   timestamp: string;
 }
 

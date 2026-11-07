@@ -349,6 +349,10 @@ export const ScanDetailPage: React.FC = () => {
                       <option value="protocol-config">Protocol & Config</option>
                       <option value="pqc-implementation">PQC Implementation</option>
                       <option value="weak-legacy">Weak / Legacy Cipher</option>
+                      <option value="hardcoded-secret">Hardcoded Secrets & Keys</option>
+                      <option value="owasp-top-10">OWASP Top 10 SAST</option>
+                      <option value="insecure-transport">Insecure Transport & TLS</option>
+                      <option value="pii-financial-leak">PII & Financial Data</option>
                     </select>
 
                     {/* Quantum Impact Filter */}

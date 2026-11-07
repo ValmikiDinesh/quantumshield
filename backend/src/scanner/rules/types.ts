@@ -4,6 +4,7 @@ import {
   ConfidenceLevel,
   ClassificationType,
   ReferenceLink,
+  ComplianceMapping,
 } from '../../types';
 
 export interface ScanRule {
@@ -14,6 +15,7 @@ export interface ScanRule {
   defaultSeverity: SeverityLevel;
   defaultConfidence: ConfidenceLevel;
   classification: ClassificationType;
+  compliance?: ComplianceMapping;
   quantumImpactType:
     | 'harvest-now-decrypt-later'
     | 'future-forgeability'

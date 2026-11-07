@@ -58,6 +58,7 @@ const FindingSubSchema = new Schema(
       },
     ],
     quantumImpactType: { type: String, required: true },
+    compliance: { type: Schema.Types.Mixed },
     timestamp: { type: String, required: true },
   },
   { _id: false }

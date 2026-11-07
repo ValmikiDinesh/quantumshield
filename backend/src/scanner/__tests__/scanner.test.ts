@@ -256,4 +256,149 @@ export function createFormattedKey() {
     const manifestFindings = result.findings.filter(f => f.detectionMethod === 'manifest-inspector');
     expect(manifestFindings.length).toBeGreaterThanOrEqual(4);
   });
+
+  it('detects hardcoded AWS, Razorpay, Stripe, and GitHub credentials with zero leaks', async () => {
+    const sampleAwsKey = ['AKIA', '1122334455667788'].join('');
+    const sampleRzpKey = ['rzp', '_live_', 'abcdef12345678'].join('');
+    const sampleStripeKey = ['sk', '_live_', '1234567890abcdef1234567890abcdef'].join('');
+    const sampleGitToken = ['ghp', '_123456789012345678901234567890123456'].join('');
+
+    const files: FileScanInput[] = [
+      {
+        filePath: 'config/aws.ts',
+        relativePath: 'config/aws.ts',
+        content: `
+          const awsKey = "${sampleAwsKey}";
+          const rzpKey = "${sampleRzpKey}";
+          const stripeKey = "${sampleStripeKey}";
+          const gitToken = "${sampleGitToken}";
+        `,
+        extension: '.ts',
+        sizeBytes: 250,
+      },
+    ];
+
+    const result = await ScannerEngine.scanFiles(files);
+    const secretFindings = result.findings.filter(f => f.category === 'hardcoded-secret');
+    expect(secretFindings.length).toBeGreaterThanOrEqual(4);
+
+    const ruleIds = secretFindings.map(f => f.ruleId);
+    expect(ruleIds).toContain('SEC-AWS-KEY');
+    expect(ruleIds).toContain('SEC-RAZORPAY-KEY');
+    expect(ruleIds).toContain('SEC-STRIPE-KEY');
+    expect(ruleIds).toContain('SEC-GITHUB-TOKEN');
+
+    // Verify compliance tags exist
+    const awsFinding = secretFindings.find(f => f.ruleId === 'SEC-AWS-KEY');
+    expect(awsFinding?.compliance?.soc2).toBeDefined();
+    expect(awsFinding?.compliance?.iso27001).toBeDefined();
+
+    // Verify evidence is properly redacted
+    secretFindings.forEach(f => {
+      expect(f.evidence).not.toContain(sampleAwsKey);
+      expect(f.evidence).not.toContain(sampleRzpKey);
+      expect(f.evidence).not.toContain(sampleStripeKey);
+    });
+  });
+
+  it('detects broken classical cryptography: MD5, SHA-1, and AES-ECB', async () => {
+    const files: FileScanInput[] = [
+      {
+        filePath: 'src/auth/legacyCrypto.ts',
+        relativePath: 'src/auth/legacyCrypto.ts',
+        content: `
+          import crypto from 'crypto';
+          const md5Hash = crypto.createHash('md5').update('pass').digest('hex');
+          const sha1Hash = crypto.createHash('sha1').update('pass').digest('hex');
+          const ecbCipher = crypto.createCipheriv('aes-256-ecb', key, null);
+        `,
+        extension: '.ts',
+        sizeBytes: 250,
+      },
+    ];
+
+    const result = await ScannerEngine.scanFiles(files);
+    const md5Finding = result.findings.find(f => f.ruleId === 'CRYPTO-WEAK-MD5');
+    const sha1Finding = result.findings.find(f => f.ruleId === 'CRYPTO-WEAK-SHA1');
+    const ecbFinding = result.findings.find(f => f.ruleId === 'CRYPTO-MODE-AES-ECB');
+
+    expect(md5Finding).toBeDefined();
+    expect(md5Finding?.severity).toBe('High');
+    expect(sha1Finding).toBeDefined();
+    expect(ecbFinding).toBeDefined();
+  });
+
+  it('detects OWASP Top 10 vulnerabilities: SSRF metadata and Command Injection', async () => {
+    const files: FileScanInput[] = [
+      {
+        filePath: 'src/routes/api.ts',
+        relativePath: 'src/routes/api.ts',
+        content: `
+          import child_process from 'child_process';
+          const metadataUrl = "http://169.254.169.254/latest/meta-data/";
+          child_process.exec(\`ls -la \${req.query.dir}\`);
+        `,
+        extension: '.ts',
+        sizeBytes: 200,
+      },
+    ];
+
+    const result = await ScannerEngine.scanFiles(files);
+    const ssrfFinding = result.findings.find(f => f.ruleId === 'OWASP-SSRF-METADATA');
+    const cmdFinding = result.findings.find(f => f.ruleId === 'OWASP-INJECTION-CMD');
+
+    expect(ssrfFinding).toBeDefined();
+    expect(ssrfFinding?.category).toBe('owasp-top-10');
+    expect(cmdFinding).toBeDefined();
+  });
+
+  it('detects insecure transport (rejectUnauthorized: false)', async () => {
+    const files: FileScanInput[] = [
+      {
+        filePath: 'src/http/client.ts',
+        relativePath: 'src/http/client.ts',
+        content: `
+          import https from 'https';
+          const agent = new https.Agent({ rejectUnauthorized: false });
+        `,
+        extension: '.ts',
+        sizeBytes: 150,
+      },
+    ];
+
+    const result = await ScannerEngine.scanFiles(files);
+    const transportFinding = result.findings.find(f => f.ruleId === 'NET-TLS-DISABLED-VERIFY');
+
+    expect(transportFinding).toBeDefined();
+    expect(transportFinding?.category).toBe('insecure-transport');
+    expect(transportFinding?.severity).toBe('Critical');
+  });
+
+  it('detects PII exposure: Aadhaar, PAN Card, and logs', async () => {
+    const files: FileScanInput[] = [
+      {
+        filePath: 'src/services/customer.ts',
+        relativePath: 'src/services/customer.ts',
+        content: `
+          const customerPan = "ABCDE1234F";
+          const customerAadhaar = "5432 1098 7654";
+          console.log("Customer password is: ", req.body.password);
+        `,
+        extension: '.ts',
+        sizeBytes: 200,
+      },
+    ];
+
+    const result = await ScannerEngine.scanFiles(files);
+    const aadhaarFinding = result.findings.find(f => f.ruleId === 'PII-AADHAAR-EXPOSURE');
+    const logFinding = result.findings.find(f => f.ruleId === 'PII-LOG-SENSITIVE-DATA');
+
+    expect(aadhaarFinding).toBeDefined();
+    expect(aadhaarFinding?.category).toBe('pii-financial-leak');
+    expect(logFinding).toBeDefined();
+
+    // Verify PII is redacted in evidence
+    expect(aadhaarFinding?.evidence).not.toContain('5432 1098 7654');
+    expect(aadhaarFinding?.evidence).toContain('[REDACTED_AADHAAR]');
+  });
 });
