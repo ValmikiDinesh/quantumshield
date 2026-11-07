@@ -27,11 +27,15 @@ import {
   Activity,
   Check,
   AlertCircle,
+  Briefcase,
+  UserCheck,
+  Code,
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [activePreviewTab, setActivePreviewTab] = useState<'secret' | 'owasp' | 'pqc'>('secret');
+  const [activePersona, setActivePersona] = useState<'developer' | 'ciso' | 'founder'>('developer');
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -93,6 +97,125 @@ export const LandingPage: React.FC = () => {
           <div className="mt-8 inline-flex items-center space-x-2 text-xs text-slate-400 bg-navy-950/80 px-4 py-2 rounded-lg border border-navy-800">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span><strong>Zero-Liability Advisory:</strong> 100% Read-only pattern inspection. We never alter your code or inject breaking automated PRs.</span>
+          </div>
+
+          {/* Role-Specific Perspective Switcher */}
+          <div className="mt-10 max-w-3xl mx-auto bg-navy-900/90 rounded-2xl border border-navy-700/80 p-3 shadow-xl backdrop-blur-md">
+            <div className="text-center mb-2.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Tailored For Your Role: What QuantumShield Means For You
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 p-1 bg-navy-950/90 rounded-xl border border-navy-800">
+              <button
+                type="button"
+                onClick={() => setActivePersona('developer')}
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+                  activePersona === 'developer'
+                    ? 'bg-brand-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-white hover:bg-navy-900'
+                }`}
+              >
+                <Code className="w-3.5 h-3.5" />
+                <span>For Developers</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActivePersona('ciso')}
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+                  activePersona === 'ciso'
+                    ? 'bg-brand-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-white hover:bg-navy-900'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>For CISOs & Auditors</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActivePersona('founder')}
+                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+                  activePersona === 'founder'
+                    ? 'bg-brand-600 text-white shadow-md'
+                    : 'text-slate-400 hover:text-white hover:bg-navy-900'
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>For Founders & CEOs</span>
+              </button>
+            </div>
+
+            {/* Persona Content Panel */}
+            <div className="p-4 mt-2 bg-navy-950/70 rounded-xl border border-navy-800/80 text-left transition-all">
+              {activePersona === 'developer' && (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Terminal className="w-4 h-4 text-blue-400" />
+                      <span>Developer Experience: Zero Noise, Zero Broken Builds</span>
+                    </span>
+                    <span className="text-[10px] bg-blue-950 text-blue-300 px-2 py-0.5 rounded border border-blue-800 font-semibold">
+                      Fast In-Memory Analysis
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    No unpredictable AI pull requests that break production. You get exact file paths, line-level evidence with masked credentials, and clear step-by-step checklists to remediate secrets and broken ciphers quickly.
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-1 text-[11px] text-slate-400">
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-emerald-400">✓ 100% Read-Only Inspection</span>
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-blue-400">✓ Exact Line Traceability</span>
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-purple-400">✓ No Compiler Needed</span>
+                  </div>
+                </div>
+              )}
+
+              {activePersona === 'ciso' && (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <UserCheck className="w-4 h-4 text-emerald-400" />
+                      <span>CISO & Compliance: Continuous Regulatory Audit Readiness</span>
+                    </span>
+                    <span className="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800 font-semibold">
+                      Audit-Ready Reports
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Satisfy SOC 2 Type II, ISO/IEC 27001, PCI-DSS v4.0, and India DPDP Act requirements automatically. Generate board-level executive PDF reports and monitor Harvest Now Decrypt Later (HNDL) exposure with zero third-party code tampering liability.
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-1 text-[11px] text-slate-400">
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-emerald-400">✓ SOC 2 & ISO 27001 Mapped</span>
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-blue-400">✓ DPDP Act Section 8(5)</span>
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-purple-400">✓ Board Executive PDFs</span>
+                  </div>
+                </div>
+              )}
+
+              {activePersona === 'founder' && (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      <span>Founders & Executives: Peace of Mind in Plain English</span>
+                    </span>
+                    <span className="text-[10px] bg-amber-950 text-amber-300 px-2 py-0.5 rounded border border-amber-800 font-semibold">
+                      Zero Cyber Background Needed
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    You don't need to be a cyber specialist to protect your business. QuantumShield acts like an automated security officer—alerting you if developers accidentally expose live payment keys, customer data, or vulnerable algorithms before malicious actors find them.
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-1 text-[11px] text-slate-400">
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-emerald-400">✓ Prevent Costly Breaches</span>
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-amber-400">✓ Plain-English Explanations</span>
+                    <span className="px-2 py-0.5 rounded bg-navy-900 border border-navy-800 text-blue-400">✓ Transparent INR Pricing</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Key Metric Highlights */}
@@ -459,6 +582,15 @@ export const LandingPage: React.FC = () => {
                     </p>
                   </div>
 
+                  {/* Plain English Founder Translation */}
+                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 flex items-start space-x-2.5">
+                    <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-amber-300">Plain English for Founders & Non-Technical Leaders: </span>
+                      A real payment key was accidentally left inside your website's code. If a competitor or bad actor finds this key, they could issue unauthorized refunds or view your customer transaction history. It takes 2 minutes to safely move it out of the code into a private environment variable.
+                    </div>
+                  </div>
+
                   {/* Redacted Code Snippet */}
                   <div className="bg-navy-950 rounded-xl p-4 font-mono text-xs text-slate-300 border border-navy-800">
                     <div className="text-slate-500">  17 | const razorpay = new Razorpay(&#123;</div>
@@ -520,6 +652,15 @@ export const LandingPage: React.FC = () => {
                     <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                       An HTTP request is dispatched using a user-controlled parameter without IP whitelisting or loopback restriction. An attacker can probe AWS IMDS metadata (<code className="text-xs bg-slate-100 px-1 py-0.5 rounded font-mono">169.254.169.254</code>) or internal VPC services.
                     </p>
+                  </div>
+
+                  {/* Plain English Founder Translation */}
+                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 flex items-start space-x-2.5">
+                    <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-blue-300">Plain English for Founders & Non-Technical Leaders: </span>
+                      Your website's server is visiting web links requested by users without verifying where they lead. A hacker could trick your server into accessing internal AWS servers or private databases that should never be public.
+                    </div>
                   </div>
 
                   {/* Redacted Code Snippet */}
@@ -584,6 +725,15 @@ export const LandingPage: React.FC = () => {
                     </p>
                   </div>
 
+                  {/* Plain English Founder Translation */}
+                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 flex items-start space-x-2.5">
+                    <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-purple-300">Plain English for Founders & Non-Technical Leaders: </span>
+                      Your system uses 20-year-old mathematical encryption (RSA). While secure against today's computers, state-sponsored hackers are recording encrypted internet traffic today to unlock it retroactively when powerful quantum computers arrive. Migrating to NIST's August 2024 standards protects your long-term customer records.
+                    </div>
+                  </div>
+
                   {/* Redacted Code Snippet */}
                   <div className="bg-navy-950 rounded-xl p-4 font-mono text-xs text-slate-300 border border-navy-800">
                     <div className="text-slate-500">  41 | export function initKeys() &#123;</div>
@@ -646,9 +796,9 @@ export const LandingPage: React.FC = () => {
               <div className="w-10 h-10 rounded-xl bg-brand-600 text-white font-bold flex items-center justify-center text-sm mb-4 shadow-sm">
                 1
               </div>
-              <h4 className="text-base font-bold text-navy-950 mb-2">Upload Source Code ZIP</h4>
+              <h4 className="text-base font-bold text-navy-950 mb-2">Upload Source Code ZIP or Repo</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Upload your repository archive. Archives are inspected strictly in-memory with hardened defenses against Zip Slip directory traversal and decompression bombs.
+                Drag-and-drop your repository ZIP archive. Zero compiler toolchains, Docker daemons, or package dependencies needed. In-memory isolation guarantees 100% defense against path traversal or data leaks.
               </p>
             </div>
 
