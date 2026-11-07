@@ -1,6 +1,6 @@
 export type UserRole = 'owner' | 'admin' | 'member';
 
-export type PlanTier = 'free' | 'developer' | 'team' | 'enterprise';
+export type PlanTier = 'free' | 'single_scan' | 'developer' | 'team' | 'enterprise';
 
 export interface UserDTO {
   id: string;

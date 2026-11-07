@@ -7,6 +7,9 @@ describe('Razorpay Standard Web Checkout Integration', () => {
   const TEST_KEY_SECRET = 'zdlIVr90nTydJy6zVbOl9mkq';
 
   it('correctly calculates INR paise amounts for all subscription tiers', () => {
+    expect(PLAN_PRICES_INR.single_scan.rupees).toBe(299);
+    expect(PLAN_PRICES_INR.single_scan.paise).toBe(29900);
+
     expect(PLAN_PRICES_INR.developer.rupees).toBe(3999);
     expect(PLAN_PRICES_INR.developer.paise).toBe(399900);
 

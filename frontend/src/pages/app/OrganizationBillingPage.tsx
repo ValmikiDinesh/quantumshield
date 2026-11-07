@@ -372,12 +372,14 @@ export const OrganizationBillingPage: React.FC = () => {
 
                         <div className="my-3">
                           <span className="text-3xl font-extrabold text-navy-950">
-                            {plan.tier === 'free' ? '₹0' : `₹${plan.priceMonthlyINR?.toLocaleString('en-IN') || plan.priceMonthly}`}
+                            {`₹${plan.priceMonthlyINR?.toLocaleString('en-IN') || plan.priceMonthly}`}
                           </span>
-                          <span className="text-xs text-slate-500"> / month</span>
-                          {plan.tier !== 'free' && (
-                            <span className="block text-[11px] text-slate-400 mt-0.5">+ 18% GST</span>
-                          )}
+                          <span className="text-xs text-slate-500">
+                            {plan.isOneTime ? ' / scan' : ' / month'}
+                          </span>
+                          <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">
+                            Flat • Inclusive of 18% GST
+                          </span>
                         </div>
 
                         <ul className="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-4">
@@ -391,7 +393,7 @@ export const OrganizationBillingPage: React.FC = () => {
                       </div>
 
                       <div className="mt-6 pt-4 border-t border-slate-100">
-                        {isCurrent ? (
+                        {isCurrent && !plan.isOneTime ? (
                           <div className="w-full text-center py-2 px-3 rounded-lg bg-slate-100 text-slate-600 text-xs font-semibold">
                             Current Plan
                           </div>
@@ -399,15 +401,17 @@ export const OrganizationBillingPage: React.FC = () => {
                           <button
                             onClick={() => handleRazorpayCheckout(plan.tier)}
                             disabled={isAnyUpdating}
-                            className="w-full py-2 px-3 rounded-lg bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors disabled:opacity-50 shadow-sm"
+                            className="w-full py-2 px-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors disabled:opacity-50 shadow-sm"
                           >
                             {isThisUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                             <span>
-                              {plan.tier === 'free'
-                                ? 'Switch to Free'
+                              {plan.isOneTime
+                                ? isThisUpdating
+                                  ? 'Opening Razorpay...'
+                                  : 'Buy Single Scan (₹299)'
                                 : isThisUpdating
                                 ? 'Opening Razorpay...'
-                                : 'Upgrade via Razorpay'}
+                                : `Upgrade to ${plan.name}`}
                             </span>
                           </button>
                         )}

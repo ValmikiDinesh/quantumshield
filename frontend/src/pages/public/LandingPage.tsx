@@ -936,23 +936,24 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Free Tier */}
+            {/* Single Scan Tier */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col justify-between shadow-2xs hover:shadow-md transition-shadow">
               <div>
-                <h4 className="text-base font-bold text-navy-950">Free Community</h4>
-                <p className="text-xs text-slate-500 mt-1">For independent developers & open source</p>
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-brand-700 text-[10px] font-bold border border-blue-200 mb-2">
+                  <Zap className="w-3 h-3 text-brand-600" />
+                  <span>One-Time Audit</span>
+                </div>
+                <h4 className="text-base font-bold text-navy-950">Single Scan</h4>
+                <p className="text-xs text-slate-500 mt-1">For instant one-off repository audits</p>
                 <div className="my-5">
-                  <span className="text-3xl font-extrabold text-navy-950">₹0</span>
-                  <span className="text-xs text-slate-500"> / month</span>
+                  <span className="text-3xl font-extrabold text-navy-950">₹299</span>
+                  <span className="text-xs text-slate-500"> / scan</span>
+                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>3 Projects</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>15 Scans / month</span>
+                    <span>1 Full Repository Scan</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
@@ -960,19 +961,23 @@ export const LandingPage: React.FC = () => {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Zero-Leak Secret Masking</span>
+                    <span>Zero-Leak Secret Redaction</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>JSON Report Export</span>
+                    <span>Executive PDF Audit Report</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                    <span>Plain-English AI Checklist</span>
                   </li>
                 </ul>
               </div>
               <Link
                 to="/register"
-                className="mt-6 w-full text-center py-2.5 px-3 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-800 transition-colors"
+                className="mt-6 w-full text-center py-2.5 px-3 rounded-xl border border-brand-600 text-brand-600 hover:bg-brand-50 text-xs font-bold transition-colors"
               >
-                Sign Up Free
+                Buy Single Scan (₹299)
               </Link>
             </div>
 
@@ -987,7 +992,7 @@ export const LandingPage: React.FC = () => {
                 <div className="my-5">
                   <span className="text-3xl font-extrabold text-navy-950">₹3,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
-                  <span className="block text-[11px] text-slate-400 mt-0.5">+ 18% GST applicable</span>
+                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
                   <li className="flex items-center space-x-2">
@@ -1028,7 +1033,7 @@ export const LandingPage: React.FC = () => {
                 <div className="my-5">
                   <span className="text-3xl font-extrabold text-navy-950">₹15,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
-                  <span className="block text-[11px] text-slate-400 mt-0.5">+ 18% GST applicable</span>
+                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
                   <li className="flex items-center space-x-2">
@@ -1065,7 +1070,7 @@ export const LandingPage: React.FC = () => {
                 <div className="my-5">
                   <span className="text-3xl font-extrabold text-navy-950">₹39,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
-                  <span className="block text-[11px] text-slate-400 mt-0.5">+ 18% GST applicable</span>
+                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
                   <li className="flex items-center space-x-2">
@@ -1098,11 +1103,11 @@ export const LandingPage: React.FC = () => {
           {/* Payment Trust & Tax Disclosure */}
           <div className="mt-8 p-4 bg-white rounded-xl border border-slate-200 text-center max-w-3xl mx-auto shadow-2xs">
             <p className="text-xs text-slate-700 font-medium">
-              🇮🇳 All prices are billed in Indian National Rupees (INR). GST (18%) calculated at checkout.
+              🇮🇳 All prices are in Indian National Rupees (INR) and are <strong>ALL-INCLUSIVE of 18% GST</strong>. Zero surprise additions at checkout.
             </p>
             <p className="text-[11px] text-slate-500 mt-1">
-              Instant digital access upon authorization. Covered by our <strong>7-Day Satisfaction Guarantee</strong>. 
-              Secure processing via <strong>Razorpay</strong> (UPI, RuPay, NetBanking, Visa, MasterCard).
+              B2B GST Tax Invoices with <strong>Input Tax Credit (ITC)</strong> claimable breakdown automatically provided upon payment.
+              Instant activation via <strong>Razorpay</strong> (UPI, Google Pay, PhonePe, Cards, NetBanking). Covered by our <strong>7-Day Satisfaction Guarantee</strong>.
             </p>
           </div>
         </div>

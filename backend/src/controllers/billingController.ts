@@ -7,14 +7,55 @@ import { AuditLog } from '../models/AuditLog';
 import { RazorpayService } from '../services/razorpayService';
 import { env } from '../config/env';
 
-export const PLAN_PRICES_INR: Record<Exclude<PlanTier, 'free'>, { rupees: number; paise: number }> = {
-  developer: { rupees: 3999, paise: 399900 },
-  team: { rupees: 15999, paise: 1599900 },
-  enterprise: { rupees: 39999, paise: 3999900 },
+export const PLAN_PRICES_INR: Record<
+  Exclude<PlanTier, 'free'>,
+  {
+    name: string;
+    rupees: number;
+    paise: number;
+    baseRupees: number;
+    gstRupees: number;
+    isOneTime?: boolean;
+    description: string;
+  }
+> = {
+  single_scan: {
+    name: 'Single Scan',
+    rupees: 299,
+    paise: 29900,
+    baseRupees: 253.39,
+    gstRupees: 45.61,
+    isOneTime: true,
+    description: 'QuantumShield Single Scan Pass (1 Repository Audit)',
+  },
+  developer: {
+    name: 'Developer Pro',
+    rupees: 3999,
+    paise: 399900,
+    baseRupees: 3388.98,
+    gstRupees: 610.02,
+    description: 'QuantumShield Developer Pro Monthly Subscription',
+  },
+  team: {
+    name: 'Team Security',
+    rupees: 15999,
+    paise: 1599900,
+    baseRupees: 13558.47,
+    gstRupees: 2440.53,
+    description: 'QuantumShield Team Security Monthly Subscription',
+  },
+  enterprise: {
+    name: 'Enterprise Shield',
+    rupees: 39999,
+    paise: 3999900,
+    baseRupees: 33897.46,
+    gstRupees: 6101.54,
+    description: 'QuantumShield Enterprise Shield Monthly Subscription',
+  },
 };
 
 export const createRazorpayOrderSchema = z.object({
-  plan: z.enum(['developer', 'team', 'enterprise']).optional(),
+  plan: z.enum(['single_scan', 'developer', 'team', 'enterprise']).optional(),
   amount: z.number().min(100).optional(),
   currency: z.string().optional(),
   receipt: z.string().optional(),
@@ -27,7 +68,7 @@ export const verifyRazorpayPaymentSchema = z.object({
   razorpayPaymentId: z.string().optional(),
   razorpay_signature: z.string().optional(),
   razorpaySignature: z.string().optional(),
-  plan: z.enum(['developer', 'team', 'enterprise']).optional(),
+  plan: z.enum(['single_scan', 'developer', 'team', 'enterprise']).optional(),
 });
 
 export class BillingController {
@@ -183,12 +224,19 @@ export class BillingController {
 
       // Upgrade organization limits if plan is specified and orgId is available
       if (orgId && plan && PLAN_LIMITS[plan as PlanTier]) {
-        const limits = PLAN_LIMITS[plan as PlanTier];
         const org = await Organization.findById(orgId);
         if (org) {
-          org.plan = plan as PlanTier;
-          org.maxProjects = limits.maxProjects;
-          org.maxScansPerMonth = limits.maxScansPerMonth;
+          if (plan === 'single_scan') {
+            // Allocate single scan quota credit
+            org.maxScansPerMonth = (org.maxScansPerMonth || 0) + 1;
+            org.maxProjects = Math.max(org.maxProjects || 1, 1);
+            org.plan = 'single_scan';
+          } else {
+            const limits = PLAN_LIMITS[plan as PlanTier];
+            org.plan = plan as PlanTier;
+            org.maxProjects = limits.maxProjects;
+            org.maxScansPerMonth = limits.maxScansPerMonth;
+          }
           await org.save();
         }
       }

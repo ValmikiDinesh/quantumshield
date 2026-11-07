@@ -28,7 +28,7 @@ const PaymentSchema: Schema = new Schema(
     razorpaySignature: { type: String },
     plan: {
       type: String,
-      enum: ['free', 'developer', 'team', 'enterprise'],
+      enum: ['free', 'single_scan', 'developer', 'team', 'enterprise'],
       required: true,
     },
     amount: { type: Number, required: true },

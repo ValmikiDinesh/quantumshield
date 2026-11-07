@@ -7,7 +7,7 @@ import { AuditLog } from '../models/AuditLog';
 import { AuthenticatedRequest, PlanTier } from '../types';
 
 export const updatePlanSchema = z.object({
-  plan: z.enum(['free', 'developer', 'team', 'enterprise']),
+  plan: z.enum(['free', 'single_scan', 'developer', 'team', 'enterprise']),
 });
 
 export class OrganizationController {
@@ -45,18 +45,28 @@ export class OrganizationController {
           createdAt: org.createdAt.toISOString(),
           pricingPlans: [
             {
-              tier: 'free',
-              name: 'Free Community',
-              priceMonthly: 0,
-              priceMonthlyINR: 0,
-              features: ['3 Projects', '15 Scans / month', 'Standard PQC Rules', 'JSON Export'],
-              active: org.plan === 'free',
+              tier: 'single_scan',
+              name: 'Single Scan',
+              priceMonthly: 4,
+              priceMonthlyINR: 299,
+              isOneTime: true,
+              gstInclusive: true,
+              features: [
+                '1 Full Repository Audit',
+                'Zero-Leak Masked Secret Scanner',
+                'OWASP Top 10 SAST Analysis',
+                'NIST Post-Quantum Cryptography Audit',
+                'Downloadable Executive PDF Report',
+                'Non-Invasive Remediation Checklist',
+              ],
+              active: org.plan === 'single_scan',
             },
             {
               tier: 'developer',
               name: 'Developer Pro',
               priceMonthly: 49,
               priceMonthlyINR: 3999,
+              gstInclusive: true,
               features: ['10 Projects', '75 Scans / month', 'Executive PDF Reports', 'Scan Comparison Tool', 'AI Remediation Explanations'],
               active: org.plan === 'developer',
             },
@@ -65,6 +75,7 @@ export class OrganizationController {
               name: 'Team Security',
               priceMonthly: 199,
               priceMonthlyINR: 15999,
+              gstInclusive: true,
               features: ['50 Projects', '300 Scans / month', 'Multi-user Collaboration', 'Audit Logs', 'Priority Scan Pipeline'],
               active: org.plan === 'team',
             },
@@ -73,6 +84,7 @@ export class OrganizationController {
               name: 'Enterprise Shield',
               priceMonthly: 999,
               priceMonthlyINR: 39999,
+              gstInclusive: true,
               features: ['500 Projects', '5,000 Scans / month', 'Custom Cryptographic Rules', 'Dedicated Support', 'On-Premises Readiness'],
               active: org.plan === 'enterprise',
             },
