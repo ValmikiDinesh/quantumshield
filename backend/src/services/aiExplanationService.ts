@@ -108,7 +108,71 @@ Respond in strict JSON with the following structure:
         'Ensure CSPRNG high-entropy sources are properly initialized for key generation.',
         'Maintain crypto-agility configuration so parameters can be updated seamlessly if standards evolve.'
       );
-    } else if (finding.ruleId.includes('RSA')) {
+    } else if (finding.category === 'hardcoded-secret') {
+      plainSummary = `CRITICAL LEAK RISK: Plaintext credential or secret token detected in ${finding.filePath} at line ${finding.line}. Leaving credentials in source code exposes your systems to immediate automated credential harvesting.`;
+      threatExplanation = `Automated threat actor bots scan public and private repositories within seconds of commit. Once captured, credentials grant attackers direct programmatic access to cloud infrastructure, payment gateways, or databases without needing to bypass firewalls or encryption.`;
+      migrationSteps.push(
+        'Step 1: Treat this credential as immediately compromised. Revoke or rotate it in the provider console (AWS IAM, Razorpay Dashboard, Stripe Dashboard, or GitHub Settings).',
+        'Step 2: Remove the hardcoded secret from the source code and add the target configuration file to .gitignore.',
+        'Step 3: Load credentials dynamically at runtime using environment variables (process.env) or a centralized secrets manager (AWS Secrets Manager, HashiCorp Vault, Doppler).',
+        'Step 4: Purge the Git commit history using tools like git-filter-repo or BFG Repo-Cleaner if the commit was pushed to a remote repository.'
+      );
+      reviewChecklist.push(
+        'Verify that the rotated secret works properly in staging before deploying to production.',
+        'Audit access logs in the provider console for unauthorized requests during the exposure window.',
+        'Ensure the secret is never committed with a public framework prefix (such as VITE_ or NEXT_PUBLIC_).'
+      );
+    } else if (finding.category === 'weak-legacy') {
+      plainSummary = `Broken or deprecated classical cryptographic algorithm detected: ${finding.title} in ${finding.filePath} at line ${finding.line}.`;
+      threatExplanation = `Legacy algorithms like MD5, SHA-1, DES, and AES in ECB mode suffer from severe mathematical weaknesses including collision attacks, rainbow-table password cracking, and block pattern leakage. They fail modern security audits and offer zero protection against classical attackers.`;
+      migrationSteps.push(
+        'For Passwords: Use Argon2id (RFC 9106) with recommended memory parameters, or bcrypt with cost factor >= 12.',
+        'For Symmetric Encryption: Replace AES-ECB with Authenticated Encryption (AEAD) such as AES-256-GCM or ChaCha20-Poly1305, generating a fresh 12-byte random IV for each operation.',
+        'For General Hashing: Upgrade from MD5/SHA-1 to SHA-256, SHA-512 (FIPS 180-4), or SHA-3 (FIPS 202).',
+        'For Randomness: Replace Math.random() with crypto.randomBytes() or secrets.token_hex().'
+      );
+      reviewChecklist.push(
+        'Confirm that existing stored hashes or encrypted records can be migrated smoothly with a dual-read verification strategy.',
+        'Verify compliance with PCI-DSS v4.0 Requirement 3.4 and NIST SP 800-131A.'
+      );
+    } else if (finding.category === 'owasp-top-10') {
+      plainSummary = `OWASP Top 10 web application vulnerability detected: ${finding.title} in ${finding.filePath} at line ${finding.line}.`;
+      threatExplanation = `Exploitable injection or access-control flaws allow attackers to bypass authentication, probe internal cloud metadata (such as the AWS 169.254.169.254 instance service), execute arbitrary shell commands, or access data belonging to other tenants.`;
+      migrationSteps.push(
+        'Input Validation: Treat all user inputs as untrusted. Never concatenate raw input into SQL queries, system shells, or dynamic file paths.',
+        'Parameterized Queries: Use prepared statements or modern ORMs (Prisma, TypeORM, SQLAlchemy) with parameter bindings for all database operations.',
+        'Tenant Isolation: Always verify that database queries enforce tenancy filters: e.g. Model.findOne({ _id: req.params.id, organizationId: req.user.organizationId }).',
+        'SSRF Defenses: Implement an IP allowlist and strictly block private/internal IP ranges (127.0.0.1, 10.0.0.0/8, 169.254.169.254).'
+      );
+      reviewChecklist.push(
+        'Test endpoints with OWASP ZAP or automated security regression tests.',
+        'Verify that AWS EC2 instances have IMDSv2 enforced to block metadata credential theft.'
+      );
+    } else if (finding.category === 'insecure-transport') {
+      plainSummary = `Insecure network transport or disabled TLS verification detected in ${finding.filePath} at line ${finding.line}.`;
+      threatExplanation = `Disabling certificate verification (rejectUnauthorized: false, verify=False) disables cryptographic identity verification of remote servers, enabling Man-in-the-Middle (MITM) attackers to decrypt and manipulate sensitive customer traffic.`;
+      migrationSteps.push(
+        'Re-enable TLS certificate verification immediately in production code.',
+        'If testing against custom enterprise internal servers, add the internal Root CA to your system/node trust store rather than disabling verification globally.',
+        'Enforce HTTPS exclusively across all production API calls and configure HTTP Strict Transport Security (HSTS).'
+      );
+      reviewChecklist.push(
+        'Ensure production deployment scripts do not set NODE_TLS_REJECT_UNAUTHORIZED="0".',
+        'Verify that all payment and authentication API calls strictly utilize HTTPS.'
+      );
+    } else if (finding.category === 'pii-financial-leak') {
+      plainSummary = `Sensitive Personally Identifiable Information (PII) or financial data pattern detected in ${finding.filePath} at line ${finding.line}.`;
+      threatExplanation = `Exposing unmasked citizen identity credentials (such as Indian Aadhaar or PAN cards) or credit card numbers violates national data protection laws (India DPDP Act 2023, EU GDPR) and PCI-DSS, exposing organizations to major regulatory fines and identity theft liability.`;
+      migrationSteps.push(
+        'Mask all identity identifiers (e.g. show only the last 4 digits: XXXX-XXXX-1234) in UI displays, reports, and logs.',
+        'Never store raw cardholder data or citizen identity records in source code repositories or test fixtures.',
+        'Use tokenization services (such as Razorpay or Stripe payment tokens) so sensitive card numbers never touch application servers.',
+        'Implement log sanitization filters (pino-noir or custom redactors) to prevent sensitive fields from reaching log storage.'
+      );
+      reviewChecklist.push(
+        'Verify compliance with India DPDP Act Section 8(5) for personal data protection.',
+        'Confirm that third-party analytics and logging tools do not capture unmasked customer PII.'
+      );
       plainSummary = `Your code initializes or utilizes RSA asymmetric cryptography. RSA relies on prime factorization, which is secure against classical computers when keys are 2048+ bits, but entirely broken by quantum computers.`;
       threatExplanation = `Shor\'s quantum algorithm factors integers in polynomial time. If this RSA key is used for key encapsulation or encrypting confidential payloads, attackers eavesdropping today can record the ciphertext and decrypt it in the future ("Harvest Now, Decrypt Later"). If used for digital signatures, attackers with a CRQC can forge signatures.`;
       migrationSteps.push(

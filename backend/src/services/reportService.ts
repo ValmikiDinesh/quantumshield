@@ -44,6 +44,32 @@ export class ReportService {
         medium: scan.mediumCount,
         low: scan.lowCount,
         info: scan.infoCount,
+        dualShieldBreakdown: {
+          presentDayVulnerabilities: scan.findings.filter(f =>
+            ['hardcoded-secret', 'owasp-top-10', 'insecure-transport', 'pii-financial-leak', 'weak-legacy'].includes(f.category)
+          ).length,
+          postQuantumCryptographicRisks: scan.findings.filter(f =>
+            ['public-key', 'cryptographic-api', 'protocol-config', 'pqc-implementation'].includes(f.category)
+          ).length,
+        },
+      },
+      complianceSummary: {
+        soc2: {
+          status: scan.findings.some(f => f.compliance?.soc2 && f.severity === 'Critical') ? 'Action Required' : 'Compliant',
+          mappedFindingsCount: scan.findings.filter(f => f.compliance?.soc2?.length).length,
+        },
+        iso27001: {
+          status: scan.findings.some(f => f.compliance?.iso27001 && f.severity === 'Critical') ? 'Action Required' : 'Compliant',
+          mappedFindingsCount: scan.findings.filter(f => f.compliance?.iso27001?.length).length,
+        },
+        pciDss: {
+          status: scan.findings.some(f => f.compliance?.pciDss && f.severity === 'Critical') ? 'Action Required' : 'Compliant',
+          mappedFindingsCount: scan.findings.filter(f => f.compliance?.pciDss?.length).length,
+        },
+        dpdpAct: {
+          status: scan.findings.some(f => f.compliance?.dpdpAct && f.severity === 'Critical') ? 'Action Required' : 'Compliant',
+          mappedFindingsCount: scan.findings.filter(f => f.compliance?.dpdpAct?.length).length,
+        },
       },
       algorithmInventory: scan.algorithmInventory,
       findings: scan.findings,
@@ -242,8 +268,9 @@ export class ReportService {
             findingY += 25;
           }
 
-          doc.roundedRect(50, findingY, 495, 95, 4).fill('#FFFFFF');
-          doc.strokeColor(BORDER_COLOR).roundedRect(50, findingY, 495, 95, 4).stroke();
+          const cardHeight = f.compliance ? 110 : 95;
+          doc.roundedRect(50, findingY, 495, cardHeight, 4).fill('#FFFFFF');
+          doc.strokeColor(BORDER_COLOR).roundedRect(50, findingY, 495, cardHeight, 4).stroke();
 
           const isPositive = f.severity === 'Informational' || f.quantumImpactType === 'quantum-resistant' || f.category === 'pqc-implementation';
           let sColor = '#EA580C';
@@ -256,22 +283,34 @@ export class ReportService {
             badgeText = 'VERIFIED PQC';
           }
 
-          doc.roundedRect(50, findingY, 6, 95, 2).fill(sColor);
+          doc.roundedRect(50, findingY, 6, cardHeight, 2).fill(sColor);
 
           doc.fillColor(NAVY).fontSize(10).font('Helvetica-Bold').text(`${idx + 1}. ${f.title}`, 65, findingY + 8, { width: 340 });
           doc.fillColor(sColor).fontSize(8).font('Helvetica-Bold').text(badgeText, 430, findingY + 8, { width: 105, align: 'right' });
 
-          doc.fillColor(LIGHT_GRAY).fontSize(8).font('Helvetica').text(`Location: ${f.filePath}:${f.line} | Rule: ${f.ruleId} | Classification: ${f.classification}`, 65, findingY + 22);
+          doc.fillColor(LIGHT_GRAY).fontSize(8).font('Helvetica').text(`Location: ${f.filePath}:${f.line} | Category: ${f.category} | Rule: ${f.ruleId}`, 65, findingY + 22);
 
-          const contextLabel = isPositive ? 'NIST Standard Evaluation: ' : 'Quantum Relevance: ';
-          doc.fillColor(DARK_GRAY).fontSize(8).font('Helvetica').text(`${contextLabel}${f.quantumMigrationRelevance}`, 65, findingY + 36, { width: 465, ellipsis: true });
+          const contextLabel = isPositive ? 'NIST Standard Evaluation: ' : 'Security / Quantum Relevance: ';
+          doc.fillColor(DARK_GRAY).fontSize(8).font('Helvetica').text(`${contextLabel}${f.quantumMigrationRelevance || f.description}`, 65, findingY + 36, { width: 465, ellipsis: true });
           
           const adviceLabel = isPositive ? 'Best Practice Guidance: ' : 'Remediation: ';
           const adviceColor = isPositive ? '#059669' : BLUE;
-          doc.fillColor(adviceColor).fontSize(8).font('Helvetica-Bold').text(adviceLabel, 65, findingY + 58, { continued: true })
+          doc.fillColor(adviceColor).fontSize(8).font('Helvetica-Bold').text(adviceLabel, 65, findingY + 54, { continued: true })
             .font('Helvetica').fillColor(DARK_GRAY).text(f.recommendedRemediation, { width: 465, ellipsis: true });
 
-          findingY += 105;
+          if (f.compliance) {
+            const tags: string[] = [];
+            if (f.compliance.soc2?.length) tags.push(`SOC 2: ${f.compliance.soc2.join(',')}`);
+            if (f.compliance.iso27001?.length) tags.push(`ISO 27001: ${f.compliance.iso27001.join(',')}`);
+            if (f.compliance.pciDss?.length) tags.push(`PCI-DSS: ${f.compliance.pciDss.join(',')}`);
+            if (f.compliance.dpdpAct?.length) tags.push(`DPDP: ${f.compliance.dpdpAct.join(',')}`);
+            if (tags.length > 0) {
+              doc.fillColor('#7C3AED').fontSize(7.5).font('Helvetica-Bold').text(`Audit Standards: `, 65, findingY + 76, { continued: true })
+                .font('Helvetica').fillColor(DARK_GRAY).text(tags.join('  •  '), { width: 465, ellipsis: true });
+            }
+          }
+
+          findingY += cardHeight + 10;
         });
       }
 

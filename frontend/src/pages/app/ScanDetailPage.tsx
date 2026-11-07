@@ -20,6 +20,7 @@ import {
   Loader2,
   ExternalLink,
   Code2,
+  BookmarkCheck,
 } from 'lucide-react';
 
 export const ScanDetailPage: React.FC = () => {
@@ -285,6 +286,91 @@ export const ScanDetailPage: React.FC = () => {
 
                 <div className="mt-4 pt-4 border-t border-slate-100 text-[11px] text-slate-400 italic">
                   * {scan.readinessAssessment.disclaimer}
+                </div>
+              </div>
+
+              {/* DUAL-SHIELD & REGULATORY COMPLIANCE AUDIT POSTURE */}
+              <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                  <div className="flex items-center space-x-2">
+                    <BookmarkCheck className="w-5 h-5 text-brand-600" />
+                    <h3 className="text-sm font-bold text-navy-950 uppercase tracking-wider">
+                      Enterprise Compliance & Threat Posture
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+                    Zero-Liability Advisory Audit View
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {/* SOC 2 */}
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800">SOC 2 Type II</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        scan.findings.some(f => f.compliance?.soc2?.length && f.severity === 'Critical')
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {scan.findings.some(f => f.compliance?.soc2?.length && f.severity === 'Critical') ? 'Action Needed' : 'Passing'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1.5">
+                      {scan.findings.filter(f => f.compliance?.soc2?.length).length} mapped controls
+                    </p>
+                  </div>
+
+                  {/* ISO 27001 */}
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800">ISO 27001</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        scan.findings.some(f => f.compliance?.iso27001?.length && f.severity === 'Critical')
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {scan.findings.some(f => f.compliance?.iso27001?.length && f.severity === 'Critical') ? 'Action Needed' : 'Passing'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1.5">
+                      {scan.findings.filter(f => f.compliance?.iso27001?.length).length} mapped controls
+                    </p>
+                  </div>
+
+                  {/* PCI-DSS */}
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800">PCI-DSS v4.0</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        scan.findings.some(f => f.compliance?.pciDss?.length && f.severity === 'Critical')
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {scan.findings.some(f => f.compliance?.pciDss?.length && f.severity === 'Critical') ? 'Action Needed' : 'Passing'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1.5">
+                      {scan.findings.filter(f => f.compliance?.pciDss?.length).length} mapped controls
+                    </p>
+                  </div>
+
+                  {/* India DPDP */}
+                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800">India DPDP Act</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        scan.findings.some(f => f.compliance?.dpdpAct?.length && f.severity === 'Critical')
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {scan.findings.some(f => f.compliance?.dpdpAct?.length && f.severity === 'Critical') ? 'Action Needed' : 'Passing'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1.5">
+                      {scan.findings.filter(f => f.compliance?.dpdpAct?.length).length} mapped controls
+                    </p>
+                  </div>
                 </div>
               </div>
 
