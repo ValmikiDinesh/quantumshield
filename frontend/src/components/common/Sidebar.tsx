@@ -9,8 +9,10 @@ import {
   Shield,
   PlusCircle,
   ExternalLink,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { formatPlanName } from '../../utils/planUtils';
 
 interface Props {
   onNewScanClick?: () => void;
@@ -49,12 +51,12 @@ export const Sidebar: React.FC<Props> = ({ onNewScanClick }) => {
       {/* Organization badge */}
       {organization && (
         <div className="px-5 py-3.5 bg-navy-900/80 border-b border-navy-800/80 flex items-center justify-between">
-          <div className="overflow-hidden">
-            <p className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Active Organization</p>
+          <div className="overflow-hidden mr-2">
+            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Active Organization</p>
             <p className="text-xs font-semibold text-white truncate">{organization.name}</p>
           </div>
-          <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
-            {organization.plan}
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 border border-blue-800 shrink-0">
+            {formatPlanName(organization.plan)}
           </span>
         </div>
       )}
@@ -95,6 +97,50 @@ export const Sidebar: React.FC<Props> = ({ onNewScanClick }) => {
           );
         })}
       </div>
+
+      {/* Active Subscription Summary Widget */}
+      {organization && (
+        <div className="mx-3 mb-2 p-3.5 rounded-xl bg-gradient-to-br from-navy-900 to-navy-950 border border-navy-800 text-xs shadow-inner">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Subscription</span>
+            <span className="text-[9px] uppercase font-extrabold px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/80">
+              Active
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 mb-2">
+            <Sparkles className="w-3.5 h-3.5 text-brand-400 shrink-0" />
+            <p className="font-bold text-white text-xs truncate">
+              {formatPlanName(organization.plan)}
+            </p>
+          </div>
+          <div className="space-y-1 mb-2.5 text-[11px] text-slate-400">
+            <div className="flex justify-between">
+              <span>Monthly Scans:</span>
+              <span className="font-semibold text-slate-200">
+                {organization.currentScansCount || 0} / {organization.maxScansPerMonth || 75}
+              </span>
+            </div>
+            <div className="w-full bg-navy-800 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-brand-500 h-full rounded-full transition-all"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    ((organization.currentScansCount || 0) / (organization.maxScansPerMonth || 75)) * 100
+                  )}%`,
+                }}
+              />
+            </div>
+          </div>
+          <Link
+            to="/app/billing"
+            className="text-[11px] text-brand-400 hover:text-brand-300 font-semibold flex items-center justify-between group pt-1 border-t border-navy-800/60"
+          >
+            <span>Manage Plan & Invoices</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+          </Link>
+        </div>
+      )}
 
       {/* Standards Reference Card */}
       <div className="p-4 m-3 rounded-lg bg-navy-900/90 border border-navy-800 text-xs">

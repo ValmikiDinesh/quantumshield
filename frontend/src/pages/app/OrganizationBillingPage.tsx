@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Header } from '../../components/common/Header';
 import { Sidebar } from '../../components/common/Sidebar';
 import { PlanTier } from '../../types';
+import { formatPlanName, getPlanBadgeDetails } from '../../utils/planUtils';
 import {
   CreditCard,
   Building,
@@ -20,6 +21,7 @@ import {
   FileText,
   Lock,
   Download,
+  Sparkles,
 } from 'lucide-react';
 
 const loadRazorpayScript = (): Promise<boolean> => {
@@ -294,7 +296,7 @@ export const OrganizationBillingPage: React.FC = () => {
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <h2 className="text-lg font-bold text-navy-950">{orgData.name}</h2>
                           <button
                             onClick={() => {
@@ -305,8 +307,12 @@ export const OrganizationBillingPage: React.FC = () => {
                           >
                             Edit Name
                           </button>
-                          <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200">
-                            {orgData.plan} Tier
+                          <span className="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span>{formatPlanName(orgData.plan)}</span>
+                            <span className="text-[10px] uppercase font-extrabold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-full">
+                              Active Subscription
+                            </span>
                           </span>
                         </div>
                       )}
@@ -343,6 +349,22 @@ export const OrganizationBillingPage: React.FC = () => {
                         style={{ width: `${Math.min(100, (orgData.currentScansCount / orgData.maxScansPerMonth) * 100)}%` }}
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* Active Plan Inclusions Highlight */}
+                <div className="mt-5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center space-x-2.5">
+                    <Sparkles className="w-4 h-4 text-brand-600 shrink-0" />
+                    <div>
+                      <span className="font-bold text-navy-950">Active Plan: {formatPlanName(orgData.plan)}</span>
+                      <p className="text-[11px] text-slate-500 mt-0.5">{getPlanBadgeDetails(orgData.plan).description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <span className="text-[11px] text-emerald-800 bg-emerald-100 font-semibold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      ✓ Fully Active & Provisioned
+                    </span>
                   </div>
                 </div>
               </div>
