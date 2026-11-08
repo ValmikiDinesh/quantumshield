@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { LogOut, User, ShieldCheck, BookOpen, Sparkles } from 'lucide-react';
+import { LogOut, User, ShieldCheck, BookOpen } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { LaymanGuideModal } from './LaymanGuideModal';
-import { formatPlanName } from '../../utils/planUtils';
 
 interface Props {
   title: string;
@@ -11,7 +9,7 @@ interface Props {
 }
 
 export const Header: React.FC<Props> = ({ title, subtitle }) => {
-  const { user, organization, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   return (
@@ -35,25 +33,10 @@ export const Header: React.FC<Props> = ({ title, subtitle }) => {
           </button>
 
           {/* Security badge indicator */}
-          <div className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
+          <div className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1 rounded bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
             <ShieldCheck className="w-3.5 h-3.5 text-brand-600" />
             <span>Zero Code Execution Policy</span>
           </div>
-
-          {/* Active Subscription Badge */}
-          {organization && (
-            <Link
-              to="/app/billing"
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/90 text-emerald-800 hover:bg-emerald-100/80 transition-all text-xs font-semibold shadow-2xs group"
-              title="Current Active Subscription — Click to view billing & quotas"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 group-hover:scale-110 transition-transform" />
-              <span>{formatPlanName(organization.plan)}</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider bg-emerald-600 text-white px-1.5 py-0.5 rounded-full leading-none">
-                Active
-              </span>
-            </Link>
-          )}
 
           {/* User profile dropdown & logout */}
           <div className="flex items-center space-x-3">

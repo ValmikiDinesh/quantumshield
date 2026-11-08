@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { DashboardStatsDTO, ProjectDTO } from '../../types';
-import { useAuth } from '../../context/AuthContext';
-import { formatPlanName, getPlanBadgeDetails } from '../../utils/planUtils';
 import { Header } from '../../components/common/Header';
 import { Sidebar } from '../../components/common/Sidebar';
 import { SeverityBadge } from '../../components/common/SeverityBadge';
@@ -46,7 +44,6 @@ import {
 } from 'recharts';
 
 export const DashboardPage: React.FC = () => {
-  const { organization } = useAuth();
   const [stats, setStats] = useState<DashboardStatsDTO | null>(null);
   const [projects, setProjects] = useState<ProjectDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,47 +138,6 @@ export const DashboardPage: React.FC = () => {
             </div>
           ) : stats ? (
             <>
-              {/* CURRENT ACTIVE SUBSCRIPTION BANNER */}
-              {organization && (
-                <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 rounded-2xl p-4 sm:p-5 text-white border border-navy-800 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div className="flex items-start sm:items-center space-x-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-brand-600/30 border border-brand-500/40 text-brand-400 flex items-center justify-center shrink-0">
-                      <Sparkles className="w-5 h-5 text-brand-300" />
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Active Plan</span>
-                        <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          Subscribed & Active
-                        </span>
-                      </div>
-                      <h3 className="text-base sm:text-lg font-bold text-white tracking-tight mt-0.5">
-                        {formatPlanName(organization.plan)}
-                      </h3>
-                      <p className="text-xs text-slate-300 mt-0.5">
-                        {getPlanBadgeDetails(organization.plan).description}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-4 self-stretch md:self-auto justify-between md:justify-end border-t md:border-t-0 border-navy-800/80 pt-3 md:pt-0">
-                    <div className="text-left md:text-right">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Monthly Scan Quota</p>
-                      <p className="text-xs font-bold text-white">
-                        {organization.currentScansCount || 0} / {organization.maxScansPerMonth || 75} Scans Used
-                      </p>
-                    </div>
-                    <Link
-                      to="/app/billing"
-                      className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-colors shrink-0 flex items-center space-x-1.5"
-                    >
-                      <span>Manage Plan</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              )}
-
               {/* TOP SUMMARY STATS CARDS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Total Projects */}
