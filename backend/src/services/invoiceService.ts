@@ -51,6 +51,26 @@ function resolveFonts(doc: PDFKit.PDFDocument): FontConfig {
 
 export class InvoiceService {
   /**
+   * Generates a professional, standard Indian Financial Year invoice number.
+   * Format: QS/YYYY-YY/XXXX (e.g. QS/2026-27/1042)
+   */
+  public static getInvoiceNumber(payment: IPayment): string {
+    const paymentDate = new Date(payment.createdAt || Date.now());
+    const pYear = paymentDate.getFullYear();
+    const pMonth = paymentDate.getMonth() + 1;
+    const fyStart = pMonth >= 4 ? pYear : pYear - 1;
+    const fyEnd = String(fyStart + 1).slice(-2);
+    const fyString = `${fyStart}-${fyEnd}`;
+
+    let seqNum = 1001;
+    if (payment._id) {
+      const hex = payment._id.toString().slice(-4);
+      seqNum = 1000 + (parseInt(hex, 16) % 9000);
+    }
+    return `QS/${fyString}/${seqNum}`;
+  }
+
+  /**
    * Generates a clean, professional, audit-ready PDF invoice for a completed payment.
    */
   public static async generateInvoicePDF(
@@ -58,12 +78,14 @@ export class InvoiceService {
     org: IOrganization
   ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
+      const invoiceNumber = InvoiceService.getInvoiceNumber(payment);
+
       const doc = new PDFDocument({
         margin: 45,
         size: 'A4',
         bufferPages: true,
         info: {
-          Title: `Commercial Invoice - INV-QS-${payment.receipt || payment.razorpayOrderId?.slice(-8) || 'COMM'}`,
+          Title: `Commercial Invoice - ${invoiceNumber}`,
           Author: 'Valmiki Softwares',
           Subject: 'Software Subscription & Security Audit Commercial Invoice',
           Keywords: 'Invoice, QuantumShield, Valmiki Softwares, AppSec',
@@ -89,7 +111,6 @@ export class InvoiceService {
       const CARD_BG = '#F8FAFC';
       const EMERALD = '#059669';
 
-      const invoiceNumber = `INV-QS-${payment.receipt?.replace(/^rcpt_/, '') || payment._id.toString().slice(-8).toUpperCase()}`;
       const invoiceDate = new Date(payment.createdAt).toLocaleDateString('en-IN', {
         day: '2-digit',
         month: 'short',

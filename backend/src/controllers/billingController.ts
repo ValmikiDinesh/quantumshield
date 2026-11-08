@@ -331,7 +331,8 @@ export class BillingController {
       }
 
       const pdfBuffer = await InvoiceService.generateInvoicePDF(payment, org);
-      const invoiceFilename = `Invoice-INV-QS-${payment.receipt?.replace(/^rcpt_/, '') || payment._id.toString().slice(-8).toUpperCase()}.pdf`;
+      const invoiceNumber = InvoiceService.getInvoiceNumber(payment);
+      const invoiceFilename = `Invoice-${invoiceNumber.replace(/\//g, '-')}.pdf`;
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${invoiceFilename}"`);
