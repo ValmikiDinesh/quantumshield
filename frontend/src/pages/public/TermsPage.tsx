@@ -86,8 +86,8 @@ export const TermsPage: React.FC = () => {
                   <strong>Razorpay</strong>. We accept UPI, NetBanking, Credit/Debit cards, and Corporate Cards.
                 </li>
                 <li>
-                  <strong>Currency & Taxes:</strong> Unless explicitly stated otherwise, subscription fees are quoted in 
-                  <strong>Indian National Rupees (INR / ₹)</strong>. Applicable Goods & Services Tax (18% GST) is billed in accordance with Indian tax regulations.
+                  <strong>Currency & Taxes:</strong> Subscription fees are quoted flat in 
+                  <strong> Indian National Rupees (INR / ₹)</strong> with zero hidden fees. As the service is provided under the MSME / Service Provider statutory threshold exemption (under Section 22 of the CGST Act, 2017), GST is currently not levied. Customers may claim the full commercial invoice amount as a legitimate deductible business expense under Section 37 of the Income Tax Act.
                 </li>
                 <li>
                   <strong>Auto-Renewal:</strong> Subscriptions are billed on a monthly cycle. You may cancel renewal at any time via your Organization Billing settings.

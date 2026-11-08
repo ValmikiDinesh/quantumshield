@@ -315,4 +315,21 @@ export const api = {
         createdAt: string;
       }>
     >('/billing/history'),
+
+  downloadInvoicePDF: async (paymentId: string, fileName?: string) => {
+    const token = localStorage.getItem('qs_token');
+    const response = await fetch(`${BASE_URL}/billing/invoices/${paymentId}/pdf`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to download invoice PDF');
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName || `Invoice-${paymentId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
 };

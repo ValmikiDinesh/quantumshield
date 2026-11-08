@@ -948,7 +948,7 @@ export const LandingPage: React.FC = () => {
                 <div className="my-5">
                   <span className="text-3xl font-extrabold text-navy-950">₹299</span>
                   <span className="text-xs text-slate-500"> / scan</span>
-                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
+                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Zero Hidden Fees</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
                   <li className="flex items-center space-x-2">
@@ -992,7 +992,7 @@ export const LandingPage: React.FC = () => {
                 <div className="my-5">
                   <span className="text-3xl font-extrabold text-navy-950">₹3,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
-                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
+                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Zero Hidden Fees</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
                   <li className="flex items-center space-x-2 font-semibold text-navy-950">
@@ -1037,7 +1037,7 @@ export const LandingPage: React.FC = () => {
                 <div className="my-5">
                   <span className="text-3xl font-extrabold text-navy-950">₹15,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
-                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
+                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Zero Hidden Fees</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
                   <li className="flex items-center space-x-2 font-semibold text-navy-950">
@@ -1082,7 +1082,7 @@ export const LandingPage: React.FC = () => {
                 <div className="my-5">
                   <span className="text-3xl font-extrabold text-navy-950">₹39,999</span>
                   <span className="text-xs text-slate-500"> / month</span>
-                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
+                  <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Zero Hidden Fees</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
                   <li className="flex items-center space-x-2 font-semibold text-navy-950">
@@ -1120,14 +1120,16 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Payment Trust & Tax Disclosure */}
-          <div className="mt-8 p-4 bg-white rounded-xl border border-slate-200 text-center max-w-3xl mx-auto shadow-2xs">
+          {/* Payment Trust & Statutory Tax Disclosure */}
+          <div className="mt-8 p-4.5 bg-white rounded-xl border border-slate-200 text-center max-w-3xl mx-auto shadow-2xs space-y-2">
             <p className="text-xs text-slate-700 font-medium">
-              🇮🇳 All prices are in Indian National Rupees (INR) and are <strong>ALL-INCLUSIVE of 18% GST</strong>. Zero surprise additions at checkout.
+              🇮🇳 All prices are flat in Indian National Rupees (INR). Zero surprise fees at checkout.
             </p>
-            <p className="text-[11px] text-slate-500 mt-1">
-              B2B GST Tax Invoices with <strong>Input Tax Credit (ITC)</strong> claimable breakdown automatically provided upon payment.
-              Instant activation via <strong>Razorpay</strong> (UPI, Google Pay, PhonePe, Cards, NetBanking). Covered by our <strong>7-Day Satisfaction Guarantee</strong>.
+            <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-3 text-[11px] text-slate-600 leading-relaxed text-left sm:text-center">
+              <span className="font-semibold text-navy-950">Statutory Tax & Business Expense Note:</span> We are currently operating under the MSME / Service Provider threshold exemption (Annual aggregate turnover under ₹20 Lakhs as per Section 22 of the CGST Act, 2017), so GST is not applicable on our bill. You can claim 100% of this commercial invoice as a legitimate business/software expense in your company&apos;s Income Tax return (under Section 37 of the Income Tax Act) for full tax deduction.
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Clean, downloadable PDF Commercial Invoices generated instantly upon payment via <strong>Razorpay</strong> (UPI, Cards, NetBanking). Covered by our <strong>7-Day Satisfaction Guarantee</strong>.
             </p>
           </div>
         </div>

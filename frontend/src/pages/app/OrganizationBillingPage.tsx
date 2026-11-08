@@ -19,6 +19,7 @@ import {
   RefreshCw,
   FileText,
   Lock,
+  Download,
 } from 'lucide-react';
 
 const loadRazorpayScript = (): Promise<boolean> => {
@@ -42,6 +43,7 @@ export const OrganizationBillingPage: React.FC = () => {
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingTier, setUpdatingTier] = useState<PlanTier | null>(null);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
   const [isSavingName, setIsSavingName] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +94,17 @@ export const OrganizationBillingPage: React.FC = () => {
       setError(err.message || 'Failed to update organization name');
     } finally {
       setIsSavingName(false);
+    }
+  };
+
+  const handleDownloadInvoice = async (paymentId: string) => {
+    try {
+      setDownloadingInvoiceId(paymentId);
+      await api.downloadInvoicePDF(paymentId, `Invoice-${paymentId.slice(-8).toUpperCase()}.pdf`);
+    } catch (err: any) {
+      setError(err.message || 'Failed to download invoice PDF');
+    } finally {
+      setDownloadingInvoiceId(null);
     }
   };
 
@@ -378,7 +391,7 @@ export const OrganizationBillingPage: React.FC = () => {
                             {plan.isOneTime ? ' / scan' : ' / month'}
                           </span>
                           <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">
-                            Flat • Inclusive of 18% GST
+                            Flat Price • Zero Hidden Fees
                           </span>
                         </div>
 
@@ -421,12 +434,22 @@ export const OrganizationBillingPage: React.FC = () => {
                 })}
               </div>
 
+              {/* Statutory Non-GST & Income Tax Deduction Notice */}
+              <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-300 text-amber-900 text-xs flex items-start space-x-3 shadow-2xs">
+                <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <span className="font-bold">Statutory Tax & Expense Deduction Notice: </span>
+                  We are currently operating under the MSME / Service Provider threshold exemption (Annual aggregate turnover under ₹20 Lakhs as per Section 22 of the CGST Act, 2017), so GST is not applicable on our bill. 
+                  You can claim 100% of this invoice as a legitimate business/software expense in your company's Income Tax return (under Section 37 of the Income Tax Act, 1961) for full tax deduction.
+                </div>
+              </div>
+
               {/* Payment & Invoices History Table */}
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                   <div>
                     <h3 className="text-sm font-bold text-navy-950">Payment & Transaction Receipts</h3>
-                    <p className="text-xs text-slate-500">Official billing records verified with Razorpay</p>
+                    <p className="text-xs text-slate-500">Official billing records verified with Razorpay • Download PDF commercial invoices</p>
                   </div>
                   <div className="flex items-center space-x-3 text-xs text-slate-500">
                     <Link to="/refund-policy" className="hover:text-brand-600 underline">Refund Policy</Link>
@@ -437,7 +460,7 @@ export const OrganizationBillingPage: React.FC = () => {
 
                 {paymentHistory.length === 0 ? (
                   <div className="text-center py-8 text-xs text-slate-400">
-                    No payment transactions recorded yet. When you upgrade, official Razorpay receipts will appear here.
+                    No payment transactions recorded yet. When you upgrade or purchase a scan, official commercial invoices will appear here.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -445,11 +468,12 @@ export const OrganizationBillingPage: React.FC = () => {
                       <thead className="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
                         <tr>
                           <th className="py-2.5 px-3">Date</th>
-                          <th className="py-2.5 px-3">Plan</th>
+                          <th className="py-2.5 px-3">Plan / Pass</th>
                           <th className="py-2.5 px-3">Amount</th>
                           <th className="py-2.5 px-3">Razorpay Order ID</th>
                           <th className="py-2.5 px-3">Payment ID</th>
                           <th className="py-2.5 px-3">Status</th>
+                          <th className="py-2.5 px-3 text-right">Invoice</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -459,7 +483,7 @@ export const OrganizationBillingPage: React.FC = () => {
                               {new Date(p.createdAt).toLocaleDateString()}
                             </td>
                             <td className="py-2.5 px-3 font-semibold uppercase text-brand-700">
-                              {p.plan}
+                              {p.plan === 'single_scan' ? 'Single Scan' : p.plan}
                             </td>
                             <td className="py-2.5 px-3 font-semibold text-slate-900">
                               ₹{p.amountINR.toLocaleString('en-IN')}
@@ -480,6 +504,25 @@ export const OrganizationBillingPage: React.FC = () => {
                               >
                                 {p.status.toUpperCase()}
                               </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-right">
+                              {p.status === 'paid' ? (
+                                <button
+                                  onClick={() => handleDownloadInvoice(p.id)}
+                                  disabled={downloadingInvoiceId === p.id}
+                                  className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 text-brand-600 font-semibold text-[11px] shadow-2xs transition-colors"
+                                  title="Download Commercial PDF Invoice"
+                                >
+                                  {downloadingInvoiceId === p.id ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-600" />
+                                  ) : (
+                                    <Download className="w-3.5 h-3.5 text-brand-600" />
+                                  )}
+                                  <span>Download Invoice</span>
+                                </button>
+                              ) : (
+                                <span className="text-slate-400 text-[11px]">N/A</span>
+                              )}
                             </td>
                           </tr>
                         ))}

@@ -68,8 +68,7 @@ export const ShippingPolicyPage: React.FC = () => {
                   <div>
                     <h3 className="text-xs font-bold text-navy-950">Automated Electronic Invoice Delivery</h3>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      A digital payment confirmation receipt and GST-compliant tax invoice are automatically generated and emailed to your registered 
-                      account email address immediately following transaction approval.
+                      A digital payment confirmation receipt and commercial invoice are automatically generated and available for instant download in your organization billing dashboard immediately following transaction approval.
                     </p>
                   </div>
                 </div>

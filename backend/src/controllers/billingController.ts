@@ -5,6 +5,7 @@ import { Organization, PLAN_LIMITS } from '../models/Organization';
 import { Payment } from '../models/Payment';
 import { AuditLog } from '../models/AuditLog';
 import { RazorpayService } from '../services/razorpayService';
+import { InvoiceService } from '../services/invoiceService';
 import { env } from '../config/env';
 
 export const PLAN_PRICES_INR: Record<
@@ -23,8 +24,8 @@ export const PLAN_PRICES_INR: Record<
     name: 'Single Scan',
     rupees: 299,
     paise: 29900,
-    baseRupees: 253.39,
-    gstRupees: 45.61,
+    baseRupees: 299,
+    gstRupees: 0,
     isOneTime: true,
     description: 'QuantumShield Single Scan Pass (1 Repository Audit)',
   },
@@ -32,24 +33,24 @@ export const PLAN_PRICES_INR: Record<
     name: 'Developer Pro',
     rupees: 3999,
     paise: 399900,
-    baseRupees: 3388.98,
-    gstRupees: 610.02,
+    baseRupees: 3999,
+    gstRupees: 0,
     description: 'QuantumShield Developer Pro Monthly Subscription',
   },
   team: {
     name: 'Team Security',
     rupees: 15999,
     paise: 1599900,
-    baseRupees: 13558.47,
-    gstRupees: 2440.53,
+    baseRupees: 15999,
+    gstRupees: 0,
     description: 'QuantumShield Team Security Monthly Subscription',
   },
   enterprise: {
     name: 'Enterprise Shield',
     rupees: 39999,
     paise: 3999900,
-    baseRupees: 33897.46,
-    gstRupees: 6101.54,
+    baseRupees: 39999,
+    gstRupees: 0,
     description: 'QuantumShield Enterprise Shield Monthly Subscription',
   },
 };
@@ -302,6 +303,43 @@ export class BillingController {
       });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
+  /**
+   * Generates and downloads a clean, professional PDF invoice for a completed payment.
+   */
+  public static async downloadInvoicePdf(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const orgId = req.user!.organizationId;
+      const { paymentId } = req.params;
+
+      const payment = await Payment.findOne({
+        _id: paymentId,
+        organizationId: orgId,
+      });
+
+      if (!payment) {
+        res.status(404).json({ success: false, error: 'Invoice not found or access denied.' });
+        return;
+      }
+
+      const org = await Organization.findById(orgId);
+      if (!org) {
+        res.status(404).json({ success: false, error: 'Organization not found.' });
+        return;
+      }
+
+      const pdfBuffer = await InvoiceService.generateInvoicePDF(payment, org);
+      const invoiceFilename = `Invoice-INV-QS-${payment.receipt?.replace(/^rcpt_/, '') || payment._id.toString().slice(-8).toUpperCase()}.pdf`;
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${invoiceFilename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.status(200).send(pdfBuffer);
+    } catch (err: any) {
+      console.error('[BillingController] downloadInvoicePdf error:', err);
+      res.status(500).json({ success: false, error: err.message || 'Failed to generate PDF invoice.' });
     }
   }
 }

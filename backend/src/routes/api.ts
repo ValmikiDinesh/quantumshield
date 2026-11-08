@@ -146,5 +146,6 @@ router.post(
   BillingController.verifyPayment
 );
 router.get('/billing/history', requireAuth, BillingController.getHistory);
+router.get('/billing/invoices/:paymentId/pdf', requireAuth, BillingController.downloadInvoicePdf);
 
 export default router;

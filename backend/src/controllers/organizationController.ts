@@ -50,7 +50,7 @@ export class OrganizationController {
               priceMonthly: 4,
               priceMonthlyINR: 299,
               isOneTime: true,
-              gstInclusive: true,
+              taxExempt: true,
               features: [
                 '1 Full Repository Audit',
                 'Dual-Shield Rule Catalog (Secrets + SAST + PQC)',
@@ -65,7 +65,7 @@ export class OrganizationController {
               name: 'Developer Pro',
               priceMonthly: 49,
               priceMonthlyINR: 3999,
-              gstInclusive: true,
+              taxExempt: true,
               features: [
                 'Includes all Single Scan features, plus:',
                 '10 Repositories / Projects',
@@ -81,7 +81,7 @@ export class OrganizationController {
               name: 'Team Security',
               priceMonthly: 199,
               priceMonthlyINR: 15999,
-              gstInclusive: true,
+              taxExempt: true,
               features: [
                 'Includes all Developer Pro features, plus:',
                 '50 Repositories / Projects',
@@ -97,7 +97,7 @@ export class OrganizationController {
               name: 'Enterprise Shield',
               priceMonthly: 999,
               priceMonthlyINR: 39999,
-              gstInclusive: true,
+              taxExempt: true,
               features: [
                 'Includes all Team Security features, plus:',
                 '500 Repositories / Projects',
