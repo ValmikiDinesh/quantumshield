@@ -9,7 +9,7 @@ import { InvoiceService } from '../services/invoiceService';
 import { env } from '../config/env';
 
 export const PLAN_PRICES_INR: Record<
-  Exclude<PlanTier, 'free'>,
+  PlanTier,
   {
     name: string;
     rupees: number;
@@ -104,7 +104,7 @@ export class BillingController {
         amountINR = Math.round(amountPaise / 100);
       } else if (req.body.plan) {
         selectedPlan = req.body.plan;
-        const planConfig = PLAN_PRICES_INR[selectedPlan as Exclude<PlanTier, 'free'>];
+        const planConfig = PLAN_PRICES_INR[selectedPlan];
         if (!planConfig) {
           res.status(400).json({ success: false, error: 'Invalid plan selected' });
           return;

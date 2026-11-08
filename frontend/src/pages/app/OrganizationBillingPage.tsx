@@ -113,24 +113,6 @@ export const OrganizationBillingPage: React.FC = () => {
   const handleRazorpayCheckout = async (tier: PlanTier) => {
     if (orgData?.plan === tier || updatingTier !== null) return;
 
-    if (tier === 'free') {
-      // Downgrade / Switch to Free
-      setUpdatingTier('free');
-      setMessage(null);
-      setError(null);
-      try {
-        await api.updatePlan('free');
-        setMessage('Subscription successfully switched to Free Community tier.');
-        await refreshProfile();
-        await loadOrg();
-      } catch (err: any) {
-        setError(err.message || 'Downgrade failed');
-      } finally {
-        setUpdatingTier(null);
-      }
-      return;
-    }
-
     setUpdatingTier(tier);
     setMessage(null);
     setError(null);

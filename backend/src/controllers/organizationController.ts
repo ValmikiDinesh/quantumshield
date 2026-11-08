@@ -7,7 +7,7 @@ import { AuditLog } from '../models/AuditLog';
 import { AuthenticatedRequest, PlanTier } from '../types';
 
 export const updatePlanSchema = z.object({
-  plan: z.enum(['free', 'single_scan', 'developer', 'team', 'enterprise']),
+  plan: z.enum(['single_scan', 'developer', 'team', 'enterprise']),
 });
 
 export class OrganizationController {

@@ -81,7 +81,7 @@ export const LandingPage: React.FC = () => {
               to="/register"
               className="w-full sm:w-auto bg-brand-600 hover:bg-brand-500 text-white font-bold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2 group"
             >
-              <span>Scan Your Repository Free</span>
+              <span>Scan Your Repository</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <a
@@ -931,7 +931,7 @@ export const LandingPage: React.FC = () => {
               Transparent Plans for Every Security Team
             </h3>
             <p className="text-sm text-slate-600 mt-2">
-              Start free with full Dual-Shield scanning capabilities. Upgrade for higher project limits and executive PDF exports.
+              Instant one-time audit passes and flexible monthly subscriptions for teams of any scale.
             </p>
           </div>
 
@@ -1214,7 +1214,7 @@ export const LandingPage: React.FC = () => {
               to="/register"
               className="bg-brand-600 hover:bg-brand-500 text-white font-bold px-8 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/30 flex items-center space-x-2 group"
             >
-              <span>Scan Your Repository Free</span>
+              <span>Scan Your Repository</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>

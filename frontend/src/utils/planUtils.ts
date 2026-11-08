@@ -1,16 +1,14 @@
 export function formatPlanName(plan?: string): string {
   switch (plan) {
-    case 'single_scan':
-      return 'Single Scan';
     case 'developer':
       return 'Developer Pro';
     case 'team':
       return 'Team Security';
     case 'enterprise':
       return 'Enterprise Shield';
-    case 'free':
+    case 'single_scan':
     default:
-      return 'Free Tier';
+      return 'Single Scan';
   }
 }
 
@@ -41,15 +39,6 @@ export function getPlanBadgeDetails(plan?: string): {
         accentBg: 'bg-indigo-600',
         description: '50 Projects • 300 Scans / month • SOC 2 & Multi-User RBAC',
       };
-    case 'single_scan':
-      return {
-        name: 'Single Scan',
-        badgeBg: 'bg-amber-50',
-        badgeText: 'text-amber-800',
-        badgeBorder: 'border-amber-200',
-        accentBg: 'bg-amber-600',
-        description: '1 Full Repository Audit Pass • Dual-Shield Catalog & PDF Export',
-      };
     case 'developer':
       return {
         name: 'Developer Pro',
@@ -59,15 +48,15 @@ export function getPlanBadgeDetails(plan?: string): {
         accentBg: 'bg-brand-600',
         description: '10 Projects • 75 Scans / month • AI Security Advisor & Diff History',
       };
-    case 'free':
+    case 'single_scan':
     default:
       return {
-        name: 'Free Community',
-        badgeBg: 'bg-slate-100',
-        badgeText: 'text-slate-700',
-        badgeBorder: 'border-slate-200',
-        accentBg: 'bg-slate-600',
-        description: 'Community Evaluation • 1 Project • 3 Scans / month',
+        name: 'Single Scan',
+        badgeBg: 'bg-amber-50',
+        badgeText: 'text-amber-800',
+        badgeBorder: 'border-amber-200',
+        accentBg: 'bg-amber-600',
+        description: '1 Full Repository Audit Pass • Dual-Shield Catalog & PDF Export',
       };
   }
 }

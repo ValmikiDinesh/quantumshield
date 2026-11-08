@@ -77,8 +77,8 @@ export const TermsPage: React.FC = () => {
             <section>
               <h2 className="text-lg font-bold text-navy-950">4. Subscriptions, Payments & Billing</h2>
               <p>
-                QuantumShield offers both free community tiers and paid recurring/monthly subscription tiers 
-                (Developer Pro, Team Security, Enterprise Shield).
+                QuantumShield offers one-time single scan passes and recurring monthly subscription tiers 
+                (Single Scan, Developer Pro, Team Security, Enterprise Shield).
               </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>

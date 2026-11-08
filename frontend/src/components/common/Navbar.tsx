@@ -58,7 +58,7 @@ export const Navbar: React.FC = () => {
                   to="/register"
                   className="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center space-x-2 shadow-sm"
                 >
-                  <span>Get Started Free</span>
+                  <span>Get Started</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </>
@@ -150,7 +150,7 @@ export const Navbar: React.FC = () => {
                   to="/register"
                   className="w-full bg-brand-600 text-white text-center py-2.5 rounded-lg text-sm font-semibold block"
                 >
-                  Get Started Free
+                  Get Started
                 </Link>
               </>
             )}

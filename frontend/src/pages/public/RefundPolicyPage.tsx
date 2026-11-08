@@ -81,7 +81,7 @@ export const RefundPolicyPage: React.FC = () => {
                 <li>
                   <strong>Continued Access Until Period End:</strong> Upon cancellation, your account will remain on the upgraded 
                   plan (with all project and scan quotas) until the end of your current monthly billing period. At that point, 
-                  your account will gracefully revert to the Free Community plan without data loss.
+                  your paid subscription will not renew, and your existing repository audit history and reports will remain securely preserved without data loss.
                 </li>
                 <li>
                   <strong>No Hidden Cancellation Penalties:</strong> There are zero cancellation fees or penalties.

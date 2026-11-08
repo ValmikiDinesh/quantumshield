@@ -60,7 +60,7 @@ export const RegisterPage: React.FC = () => {
           Create Your Security Account
         </h2>
         <p className="mt-1 text-xs text-slate-400">
-          Get started free with automated post-quantum readiness scanning
+          Get started with automated dual-shield application & post-quantum security
         </p>
       </div>
 

@@ -28,9 +28,9 @@ export class AuthService {
     const organization = await Organization.create({
       name: orgName,
       slug,
-      plan: 'free',
-      maxProjects: PLAN_LIMITS.free.maxProjects,
-      maxScansPerMonth: PLAN_LIMITS.free.maxScansPerMonth,
+      plan: 'single_scan',
+      maxProjects: PLAN_LIMITS.single_scan.maxProjects,
+      maxScansPerMonth: PLAN_LIMITS.single_scan.maxScansPerMonth,
     });
 
     const salt = await bcrypt.genSalt(12);

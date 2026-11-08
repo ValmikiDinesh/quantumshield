@@ -194,6 +194,9 @@ describe('QuantumShield API End-to-End Integration Tests', () => {
   });
 
   it('POST /api/projects/:id/scans accepts real ZIP upload and performs analysis', async () => {
+    // Grant scan allowance (simulating purchased single scan or subscribed plan)
+    await Organization.findByIdAndUpdate(userOrgId, { maxScansPerMonth: 5, plan: 'developer' });
+
     const zip = new AdmZip();
     zip.addFile(
       'src/auth.ts',
