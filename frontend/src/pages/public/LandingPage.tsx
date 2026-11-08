@@ -957,19 +957,19 @@ export const LandingPage: React.FC = () => {
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Dual-Shield Rule Catalog</span>
+                    <span>Dual-Shield Rule Catalog (Secrets + SAST + PQC)</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Zero-Leak Secret Redaction</span>
+                    <span>Zero-Leak Secret Redaction (AWS, UPI, Cards)</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Executive PDF Audit Report</span>
+                    <span>Executive PDF Audit Report Download</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Plain-English AI Checklist</span>
+                    <span>Plain-English AI Remediation Checklist</span>
                   </li>
                 </ul>
               </div>
@@ -995,25 +995,29 @@ export const LandingPage: React.FC = () => {
                   <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
-                  <li className="flex items-center space-x-2">
+                  <li className="flex items-center space-x-2 font-semibold text-navy-950">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>10 Projects</span>
+                    <span>Includes all Single Scan features, plus:</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>75 Scans / month</span>
+                    <span>10 Repositories / Projects</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Executive PDF Audit Reports</span>
+                    <span>75 Automated Scans / month</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Scan Comparison Tool</span>
+                    <span>Scan Comparison Tool (Track Diffs)</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>AI Security Advisory Engine</span>
+                    <span>Automated AI Security Advisory Engine</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                    <span>Historical Scan Auditing & Metrics</span>
                   </li>
                 </ul>
               </div>
@@ -1036,21 +1040,29 @@ export const LandingPage: React.FC = () => {
                   <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
-                  <li className="flex items-center space-x-2">
+                  <li className="flex items-center space-x-2 font-semibold text-navy-950">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>50 Projects</span>
+                    <span>Includes all Developer Pro features, plus:</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>300 Scans / month</span>
+                    <span>50 Repositories / Projects</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Multi-User Collaboration</span>
+                    <span>300 Automated Scans / month</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>SOC 2 & ISO 27001 Mapping</span>
+                    <span>Multi-User Team Collaboration & RBAC</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                    <span>Full SOC 2, ISO 27001, PCI-DSS & DPDP Mapping</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                    <span>Audit Trail Logs for Compliance</span>
                   </li>
                 </ul>
               </div>
@@ -1058,7 +1070,7 @@ export const LandingPage: React.FC = () => {
                 to="/register"
                 className="mt-6 w-full text-center py-2.5 px-3 rounded-xl border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-800 transition-colors"
               >
-                Start Trial
+                Get Started
               </Link>
             </div>
 
@@ -1073,21 +1085,29 @@ export const LandingPage: React.FC = () => {
                   <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">Flat Price • Inclusive of 18% GST</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-5">
-                  <li className="flex items-center space-x-2">
+                  <li className="flex items-center space-x-2 font-semibold text-navy-950">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>500 Projects</span>
+                    <span>Includes all Team Security features, plus:</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>5,000 Scans / month</span>
+                    <span>500 Repositories / Projects</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Custom SAST Rules & Regex</span>
+                    <span>5,000 Automated Scans / month</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                    <span>Dedicated Compliance SLA</span>
+                    <span>Custom SAST Rules & Regex Catalog</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                    <span>Dedicated Compliance SLA & Support</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                    <span>Custom Security Architecture Reviews</span>
                   </li>
                 </ul>
               </div>
