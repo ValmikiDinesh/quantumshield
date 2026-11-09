@@ -303,7 +303,7 @@ export const OrganizationBillingPage: React.FC = () => {
                         </div>
                       )}
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Organization Slug: <span className="font-mono">{orgData.slug}</span> • Member since {new Date(orgData.createdAt).toLocaleDateString()}
+                        Member since {new Date(orgData.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                       </p>
                     </div>
                   </div>
