@@ -46,25 +46,33 @@ export class ScanController {
         return;
       }
 
-      // Check organization scan limits
+      // Check organization scan limits and subscription status
       const org = await Organization.findById(orgId);
-      if (org) {
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-
-        const currentMonthScans = await Scan.countDocuments({
-          organizationId: orgId,
-          createdAt: { $gte: startOfMonth },
+      if (!org || org.plan === 'none' || org.maxScansPerMonth <= 0) {
+        res.status(403).json({
+          success: false,
+          code: 'PLAN_REQUIRED',
+          error: 'An active subscription plan or single scan pass is required to run repository scans. Please purchase a Single Scan pass (₹299) or subscribe to a monthly plan in Billing to get started.',
         });
+        return;
+      }
 
-        if (currentMonthScans >= org.maxScansPerMonth) {
-          res.status(403).json({
-            success: false,
-            error: `Monthly scan limit reached for ${org.plan.toUpperCase()} tier (${org.maxScansPerMonth} scans/month). Upgrade your plan for higher limits.`,
-          });
-          return;
-        }
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const currentMonthScans = await Scan.countDocuments({
+        organizationId: orgId,
+        createdAt: { $gte: startOfMonth },
+      });
+
+      if (currentMonthScans >= org.maxScansPerMonth) {
+        res.status(403).json({
+          success: false,
+          code: 'SCAN_LIMIT_REACHED',
+          error: `Scan limit reached for ${org.plan.toUpperCase()} tier (${org.maxScansPerMonth} scans/month). Please purchase an additional scan pass or upgrade your plan.`,
+        });
+        return;
       }
 
       // 1. Safe extraction
@@ -187,25 +195,33 @@ export class ScanController {
         return;
       }
 
-      // Check organization scan limits
+      // Check organization scan limits and subscription status
       const org = await Organization.findById(orgId);
-      if (org) {
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-
-        const currentMonthScans = await Scan.countDocuments({
-          organizationId: orgId,
-          createdAt: { $gte: startOfMonth },
+      if (!org || org.plan === 'none' || org.maxScansPerMonth <= 0) {
+        res.status(403).json({
+          success: false,
+          code: 'PLAN_REQUIRED',
+          error: 'An active subscription plan or single scan pass is required to run repository scans. Please purchase a Single Scan pass (₹299) or subscribe to a monthly plan in Billing to get started.',
         });
+        return;
+      }
 
-        if (currentMonthScans >= org.maxScansPerMonth) {
-          res.status(403).json({
-            success: false,
-            error: `Monthly scan limit reached for ${org.plan.toUpperCase()} tier (${org.maxScansPerMonth} scans/month). Upgrade your plan for higher limits.`,
-          });
-          return;
-        }
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const currentMonthScans = await Scan.countDocuments({
+        organizationId: orgId,
+        createdAt: { $gte: startOfMonth },
+      });
+
+      if (currentMonthScans >= org.maxScansPerMonth) {
+        res.status(403).json({
+          success: false,
+          code: 'SCAN_LIMIT_REACHED',
+          error: `Scan limit reached for ${org.plan.toUpperCase()} tier (${org.maxScansPerMonth} scans/month). Please purchase an additional scan pass or upgrade your plan.`,
+        });
+        return;
       }
 
       // 1. Shallow clone the repository (--depth 1) into a temporary directory
@@ -333,6 +349,35 @@ export class ScanController {
       const project = await Project.findOne({ _id: projectId, organizationId: orgId });
       if (!project) {
         res.status(404).json({ success: false, error: 'Project not found' });
+        return;
+      }
+
+      // Check organization scan limits and subscription status
+      const org = await Organization.findById(orgId);
+      if (!org || org.plan === 'none' || org.maxScansPerMonth <= 0) {
+        res.status(403).json({
+          success: false,
+          code: 'PLAN_REQUIRED',
+          error: 'An active subscription plan or single scan pass is required to run scans. Please purchase a Single Scan pass (₹299) or subscribe to a monthly plan in Billing to get started.',
+        });
+        return;
+      }
+
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const currentMonthScans = await Scan.countDocuments({
+        organizationId: orgId,
+        createdAt: { $gte: startOfMonth },
+      });
+
+      if (currentMonthScans >= org.maxScansPerMonth) {
+        res.status(403).json({
+          success: false,
+          code: 'SCAN_LIMIT_REACHED',
+          error: `Scan limit reached for ${org.plan.toUpperCase()} tier (${org.maxScansPerMonth} scans/month). Please purchase an additional scan pass or upgrade your plan.`,
+        });
         return;
       }
 
@@ -645,6 +690,35 @@ export class ScanController {
         return;
       }
 
+      // Check organization scan limits and subscription status
+      const org = await Organization.findById(orgId);
+      if (!org || org.plan === 'none' || org.maxScansPerMonth <= 0) {
+        res.status(403).json({
+          success: false,
+          code: 'PLAN_REQUIRED',
+          error: 'An active subscription plan or single scan pass is required to run scans. Please purchase a Single Scan pass (₹299) or subscribe to a monthly plan in Billing to get started.',
+        });
+        return;
+      }
+
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const currentMonthScans = await Scan.countDocuments({
+        organizationId: orgId,
+        createdAt: { $gte: startOfMonth },
+      });
+
+      if (currentMonthScans >= org.maxScansPerMonth) {
+        res.status(403).json({
+          success: false,
+          code: 'SCAN_LIMIT_REACHED',
+          error: `Scan limit reached for ${org.plan.toUpperCase()} tier (${org.maxScansPerMonth} scans/month). Please purchase an additional scan pass or upgrade your plan.`,
+        });
+        return;
+      }
+
       const report = ReportService.generateJSONReport(scan, project);
 
       res.setHeader('Content-Type', 'application/json');
@@ -669,6 +743,35 @@ export class ScanController {
       const project = await Project.findById(scan.projectId);
       if (!project) {
         res.status(404).json({ success: false, error: 'Project not found' });
+        return;
+      }
+
+      // Check organization scan limits and subscription status
+      const org = await Organization.findById(orgId);
+      if (!org || org.plan === 'none' || org.maxScansPerMonth <= 0) {
+        res.status(403).json({
+          success: false,
+          code: 'PLAN_REQUIRED',
+          error: 'An active subscription plan or single scan pass is required to run scans. Please purchase a Single Scan pass (₹299) or subscribe to a monthly plan in Billing to get started.',
+        });
+        return;
+      }
+
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const currentMonthScans = await Scan.countDocuments({
+        organizationId: orgId,
+        createdAt: { $gte: startOfMonth },
+      });
+
+      if (currentMonthScans >= org.maxScansPerMonth) {
+        res.status(403).json({
+          success: false,
+          code: 'SCAN_LIMIT_REACHED',
+          error: `Scan limit reached for ${org.plan.toUpperCase()} tier (${org.maxScansPerMonth} scans/month). Please purchase an additional scan pass or upgrade your plan.`,
+        });
         return;
       }
 

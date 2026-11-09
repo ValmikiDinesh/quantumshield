@@ -17,8 +17,8 @@ const OrganizationSchema: Schema = new Schema(
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
     plan: {
       type: String,
-      enum: ['single_scan', 'developer', 'team', 'enterprise'],
-      default: 'single_scan',
+      enum: ['none', 'single_scan', 'developer', 'team', 'enterprise'],
+      default: 'none',
     },
     maxProjects: { type: Number, default: 1 },
     maxScansPerMonth: { type: Number, default: 0 },
@@ -27,7 +27,8 @@ const OrganizationSchema: Schema = new Schema(
 );
 
 export const PLAN_LIMITS: Record<PlanTier, { maxProjects: number; maxScansPerMonth: number }> = {
-  single_scan: { maxProjects: 1, maxScansPerMonth: 0 },
+  none: { maxProjects: 1, maxScansPerMonth: 0 },
+  single_scan: { maxProjects: 1, maxScansPerMonth: 1 },
   developer: { maxProjects: 10, maxScansPerMonth: 75 },
   team: { maxProjects: 50, maxScansPerMonth: 300 },
   enterprise: { maxProjects: 500, maxScansPerMonth: 5000 },

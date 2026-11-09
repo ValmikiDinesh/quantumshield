@@ -289,13 +289,23 @@ export const OrganizationBillingPage: React.FC = () => {
                           >
                             Edit Name
                           </button>
-                          <span className="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span>{formatPlanName(orgData.plan)}</span>
-                            <span className="text-[10px] uppercase font-extrabold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-full">
-                              Active Subscription
+                          {orgData.plan === 'none' ? (
+                            <span className="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs">
+                              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                              <span>No Active Plan</span>
+                              <span className="text-[10px] uppercase font-extrabold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
+                                Unsubscribed
+                              </span>
                             </span>
-                          </span>
+                          ) : (
+                            <span className="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                              <span>{formatPlanName(orgData.plan)}</span>
+                              <span className="text-[10px] uppercase font-extrabold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">
+                                Active Subscription
+                              </span>
+                            </span>
+                          )}
                         </div>
                       )}
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -310,12 +320,12 @@ export const OrganizationBillingPage: React.FC = () => {
                   <div>
                     <div className="flex justify-between text-xs mb-1.5 font-semibold text-slate-700">
                       <span>Project Quota Utilization</span>
-                      <span>{orgData.currentProjectsCount} / {orgData.maxProjects} projects</span>
+                      <span>{orgData.currentProjectsCount} / {orgData.maxProjects || 1} projects</span>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                       <div
                         className="bg-brand-600 h-full rounded-full transition-all"
-                        style={{ width: `${Math.min(100, (orgData.currentProjectsCount / orgData.maxProjects) * 100)}%` }}
+                        style={{ width: `${Math.min(100, (orgData.currentProjectsCount / (orgData.maxProjects || 1)) * 100)}%` }}
                       />
                     </div>
                   </div>
@@ -323,32 +333,61 @@ export const OrganizationBillingPage: React.FC = () => {
                   <div>
                     <div className="flex justify-between text-xs mb-1.5 font-semibold text-slate-700">
                       <span>Monthly Scan Limit</span>
-                      <span>{orgData.currentScansCount} / {orgData.maxScansPerMonth} scans this month</span>
+                      {orgData.plan === 'none' || (orgData.maxScansPerMonth || 0) <= 0 ? (
+                        <span className="text-amber-700 font-bold">0 Allowed (Plan Required)</span>
+                      ) : (
+                        <span>{orgData.currentScansCount} / {orgData.maxScansPerMonth} scans this month</span>
+                      )}
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                       <div
-                        className="bg-brand-600 h-full rounded-full transition-all"
-                        style={{ width: `${Math.min(100, (orgData.currentScansCount / orgData.maxScansPerMonth) * 100)}%` }}
+                        className={`${orgData.plan === 'none' ? 'bg-slate-300' : 'bg-brand-600'} h-full rounded-full transition-all`}
+                        style={{
+                          width: `${
+                            orgData.plan === 'none' || !orgData.maxScansPerMonth
+                              ? 0
+                              : Math.min(100, (orgData.currentScansCount / orgData.maxScansPerMonth) * 100)
+                          }%`,
+                        }}
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Active Plan Inclusions Highlight */}
-                <div className="mt-5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center space-x-2.5">
-                    <Sparkles className="w-4 h-4 text-brand-600 shrink-0" />
-                    <div>
-                      <span className="font-bold text-navy-950">Active Plan: {formatPlanName(orgData.plan)}</span>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{getPlanBadgeDetails(orgData.plan).description}</p>
+                {orgData.plan === 'none' ? (
+                  <div className="mt-5 p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center space-x-2.5">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <div>
+                        <span className="font-bold text-amber-950">Subscription Required To Audit Code</span>
+                        <p className="text-[11px] text-amber-800 mt-0.5">
+                          You do not currently have an active plan. Select a subscription or purchase a Single Scan pass below to immediately unlock automated vulnerability audits.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 shrink-0">
+                      <span className="text-[11px] text-amber-900 bg-amber-200/60 font-semibold px-2.5 py-0.5 rounded-full border border-amber-300">
+                        Zero Free Scans Available
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 shrink-0">
-                    <span className="text-[11px] text-emerald-800 bg-emerald-100 font-semibold px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      ✓ Fully Active & Provisioned
-                    </span>
+                ) : (
+                  <div className="mt-5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center space-x-2.5">
+                      <Sparkles className="w-4 h-4 text-brand-600 shrink-0" />
+                      <div>
+                        <span className="font-bold text-navy-950">Active Plan: {formatPlanName(orgData.plan)}</span>
+                        <p className="text-[11px] text-slate-500 mt-0.5">{getPlanBadgeDetails(orgData.plan).description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 shrink-0">
+                      <span className="text-[11px] text-emerald-800 bg-emerald-100 font-semibold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        ✓ Fully Active & Provisioned
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Payment Gateway Trust Notice */}
@@ -364,7 +403,7 @@ export const OrganizationBillingPage: React.FC = () => {
               {/* Subscription Tiers Grid */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {(orgData.pricingPlans || []).map((plan: any) => {
-                  const isCurrent = orgData.plan === plan.tier;
+                  const isCurrent = orgData.plan !== 'none' && orgData.plan === plan.tier;
                   const isThisUpdating = updatingTier === plan.tier;
                   const isAnyUpdating = updatingTier !== null;
 

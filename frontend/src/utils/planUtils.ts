@@ -7,8 +7,10 @@ export function formatPlanName(plan?: string): string {
     case 'enterprise':
       return 'Enterprise Shield';
     case 'single_scan':
-    default:
       return 'Single Scan';
+    case 'none':
+    default:
+      return 'No Active Plan';
   }
 }
 
@@ -49,7 +51,6 @@ export function getPlanBadgeDetails(plan?: string): {
         description: '10 Projects • 75 Scans / month • AI Security Advisor & Diff History',
       };
     case 'single_scan':
-    default:
       return {
         name: 'Single Scan',
         badgeBg: 'bg-amber-50',
@@ -57,6 +58,16 @@ export function getPlanBadgeDetails(plan?: string): {
         badgeBorder: 'border-amber-200',
         accentBg: 'bg-amber-600',
         description: '1 Full Repository Audit Pass • Dual-Shield Catalog & PDF Export',
+      };
+    case 'none':
+    default:
+      return {
+        name: 'No Active Plan',
+        badgeBg: 'bg-slate-100',
+        badgeText: 'text-slate-700',
+        badgeBorder: 'border-slate-300',
+        accentBg: 'bg-slate-500',
+        description: 'No active subscription. Choose a plan or single scan pass below to unlock code auditing.',
       };
   }
 }

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import {
   UploadCloud,
   FileArchive,
@@ -23,6 +24,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { api } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import { ScanDetailDTO } from '../../types';
 
 interface Props {
@@ -85,6 +87,13 @@ const LANGUAGE_GUIDE = [
 const UNIVERSAL_ZIP_CMD = 'zip -r project.zip . -x "node_modules/*" "dist/*" ".yarn/*" ".venv/*" "venv/*" "env/*" "__pycache__/*" "vendor/*" "target/*" "build/*" ".gradle/*" "bin/*" ".git/*"';
 
 export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanCompleted }) => {
+  const { organization } = useAuth();
+  const isSubscribed = Boolean(
+    organization &&
+    organization.plan !== 'none' &&
+    (organization.maxScansPerMonth || 0) > 0
+  );
+
   // Mode selection
   const [activeTab, setActiveTab] = useState<'github' | 'zip'>('github');
 
@@ -154,6 +163,10 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
   // Launch GitHub scan
   const startGitHubScan = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (!isSubscribed) {
+      setError('An active subscription plan or single scan pass is required to run scans. Please subscribe to Developer Pro or purchase a Single Scan pass in Billing.');
+      return;
+    }
     if (!repoUrl.trim()) {
       setError('Please enter a GitHub repository URL or shorthand (e.g. owner/repo).');
       return;
@@ -189,6 +202,10 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
 
   // Launch ZIP upload scan
   const startUploadScan = async () => {
+    if (!isSubscribed) {
+      setError('An active subscription plan or single scan pass is required to run scans. Please subscribe to Developer Pro or purchase a Single Scan pass in Billing.');
+      return;
+    }
     if (!selectedFile) return;
     setIsScanning(true);
     setError(null);
@@ -218,6 +235,10 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
 
   // Demo scans
   const startDemoScan = async (demoType: 'classical-vulnerable' | 'hybrid-pqc' | 'clean-app') => {
+    if (!isSubscribed) {
+      setError('An active subscription plan or single scan pass is required to run scans. Please subscribe to Developer Pro or purchase a Single Scan pass in Billing.');
+      return;
+    }
     setIsScanning(true);
     setError(null);
     try {
@@ -276,6 +297,32 @@ export const ZipUploadZone: React.FC<Props> = ({ projectId, projectName, onScanC
           </button>
         </div>
       </div>
+
+      {/* Plan Subscription Requirement Alert Banner */}
+      {!isSubscribed && (
+        <div className="mb-5 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 text-xs shadow-xs">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start space-x-3">
+              <Lock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block text-sm font-bold text-navy-950">
+                  Plan Subscription Required to Scan
+                </strong>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Your account currently has no active plan. To scan repositories for hardcoded secrets, OWASP flaws, and post-quantum readiness, please purchase a Single Scan pass (₹299) or subscribe to Developer Pro.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/app/billing"
+              className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold shrink-0 transition-all shadow-sm flex items-center space-x-1.5"
+            >
+              <span>View Plans & Subscribe</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-start space-x-2 animate-in fade-in">

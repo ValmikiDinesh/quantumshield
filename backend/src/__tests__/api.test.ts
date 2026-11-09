@@ -177,7 +177,21 @@ describe('QuantumShield API End-to-End Integration Tests', () => {
     expect(res.body.data[0].id).toBe(testProjectId);
   });
 
-  it('POST /api/projects/:id/quick-scan-demo runs classical vulnerable crypto demo', async () => {
+  it('Rejects scan attempt when organization has no active plan', async () => {
+    const res = await request(app)
+      .post(`/api/projects/${testProjectId}/quick-scan-demo`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ demoType: 'classical-vulnerable' });
+
+    expect(res.status).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(res.body.code).toBe('PLAN_REQUIRED');
+  });
+
+  it('POST /api/projects/:id/quick-scan-demo runs classical vulnerable crypto demo after subscription', async () => {
+    // Grant subscription (simulating purchased plan)
+    await Organization.findByIdAndUpdate(userOrgId, { maxScansPerMonth: 5, plan: 'developer' });
+
     const res = await request(app)
       .post(`/api/projects/${testProjectId}/quick-scan-demo`)
       .set('Authorization', `Bearer ${userToken}`)
@@ -194,9 +208,6 @@ describe('QuantumShield API End-to-End Integration Tests', () => {
   });
 
   it('POST /api/projects/:id/scans accepts real ZIP upload and performs analysis', async () => {
-    // Grant scan allowance (simulating purchased single scan or subscribed plan)
-    await Organization.findByIdAndUpdate(userOrgId, { maxScansPerMonth: 5, plan: 'developer' });
-
     const zip = new AdmZip();
     zip.addFile(
       'src/auth.ts',
