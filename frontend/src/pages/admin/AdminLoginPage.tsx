@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, Lock, Mail, Loader2, AlertCircle } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ShieldAlert, Lock, Mail, Loader2, AlertCircle, Clock } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 
 export const AdminLoginPage: React.FC = () => {
   const { login } = useAdminAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const isTimeout = searchParams.get('reason') === 'timeout';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,6 +53,13 @@ export const AdminLoginPage: React.FC = () => {
 
         {/* Login Card */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/80 space-y-6">
+          {isTimeout && !error && (
+            <div className="p-3.5 bg-amber-950/60 border border-amber-800 text-amber-200 rounded-xl text-xs flex items-start space-x-2.5">
+              <Clock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <span>Your administrative session timed out due to 30 minutes of inactivity. Please sign in again.</span>
+            </div>
+          )}
+
           {error && (
             <div className="p-3.5 bg-red-950/50 border border-red-800/80 rounded-xl text-xs text-red-200 flex items-start space-x-2.5">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
@@ -106,3 +117,4 @@ export const AdminLoginPage: React.FC = () => {
     </div>
   );
 };
+

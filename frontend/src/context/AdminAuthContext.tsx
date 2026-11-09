@@ -11,46 +11,95 @@ interface AdminAuthContextType {
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
 
 const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+const LAST_ACTIVITY_KEY = 'quantumshield_admin_last_activity';
 
 export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const inactivityTimerRef = useRef<any>(null);
+  const lastRecordedRef = useRef<number>(Date.now());
 
   const logout = useCallback(() => {
     adminApi.removeToken();
+    try {
+      localStorage.removeItem(LAST_ACTIVITY_KEY);
+    } catch {}
     setAdmin(null);
-    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
     if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
       window.location.href = '/admin/login';
     }
   }, []);
 
-  const resetInactivityTimer = useCallback(() => {
-    if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
-    if (admin) {
-      inactivityTimerRef.current = setTimeout(() => {
-        alert('Your administrative session has timed out due to 30 minutes of inactivity.');
-        logout();
-      }, INACTIVITY_TIMEOUT_MS);
+  // Update activity timestamp in localStorage (throttled to at most once per 3 seconds)
+  const recordActivity = useCallback(() => {
+    // CRITICAL: Never record or track admin activity when navigating user/customer pages
+    if (!window.location.pathname.startsWith('/admin')) {
+      return;
     }
-  }, [admin, logout]);
+    const now = Date.now();
+    if (now - lastRecordedRef.current > 3000) {
+      lastRecordedRef.current = now;
+      try {
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(now));
+      } catch {}
+    }
+  }, []);
 
+  // 1. Activity event listeners: ONLY active when on /admin/* routes
   useEffect(() => {
-    const handleActivity = () => resetInactivityTimer();
+    if (!window.location.pathname.startsWith('/admin')) {
+      return;
+    }
 
-    window.addEventListener('mousemove', handleActivity);
-    window.addEventListener('keydown', handleActivity);
-    window.addEventListener('click', handleActivity);
+    recordActivity();
+
+    const handleUserAction = () => {
+      recordActivity();
+    };
+
+    window.addEventListener('mousedown', handleUserAction, { passive: true });
+    window.addEventListener('keydown', handleUserAction, { passive: true });
+    window.addEventListener('scroll', handleUserAction, { passive: true });
+    window.addEventListener('touchstart', handleUserAction, { passive: true });
 
     return () => {
-      window.removeEventListener('mousemove', handleActivity);
-      window.removeEventListener('keydown', handleActivity);
-      window.removeEventListener('click', handleActivity);
-      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+      window.removeEventListener('mousedown', handleUserAction);
+      window.removeEventListener('keydown', handleUserAction);
+      window.removeEventListener('scroll', handleUserAction);
+      window.removeEventListener('touchstart', handleUserAction);
     };
-  }, [resetInactivityTimer]);
+  }, [recordActivity]);
 
+  // 2. Inactivity polling loop: Checks every 15 seconds, ONLY on /admin routes (excluding /admin/login)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // CRITICAL: NEVER run inactivity checks on customer routes (/app, /projects, etc.)
+      if (!window.location.pathname.startsWith('/admin')) {
+        return;
+      }
+
+      // If already on login page or no token exists, do nothing
+      if (window.location.pathname === '/admin/login' || !adminApi.getToken()) {
+        return;
+      }
+
+      const storedActivity = Number(localStorage.getItem(LAST_ACTIVITY_KEY) || Date.now());
+      const elapsed = Date.now() - storedActivity;
+
+      // If truly inactive for >= 30 minutes across ALL admin tabs
+      if (elapsed >= INACTIVITY_TIMEOUT_MS) {
+        adminApi.removeToken();
+        try {
+          localStorage.removeItem(LAST_ACTIVITY_KEY);
+        } catch {}
+        setAdmin(null);
+        window.location.href = '/admin/login?reason=timeout';
+      }
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // 3. Initial session verification
   useEffect(() => {
     const verifySession = async () => {
       const token = adminApi.getToken();
@@ -64,6 +113,9 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setAdmin(res.admin);
       } catch {
         adminApi.removeToken();
+        try {
+          localStorage.removeItem(LAST_ACTIVITY_KEY);
+        } catch {}
         setAdmin(null);
       } finally {
         setIsLoading(false);
@@ -77,6 +129,11 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setIsLoading(true);
     try {
       const res = await adminApi.login(email, passwordPlain);
+      const now = Date.now();
+      lastRecordedRef.current = now;
+      try {
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(now));
+      } catch {}
       setAdmin(res.admin);
     } finally {
       setIsLoading(false);
