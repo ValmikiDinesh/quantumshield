@@ -293,17 +293,11 @@ export const OrganizationBillingPage: React.FC = () => {
                             <span className="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs">
                               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                               <span>No Active Plan</span>
-                              <span className="text-[10px] uppercase font-extrabold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
-                                Unsubscribed
-                              </span>
                             </span>
                           ) : (
                             <span className="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
                               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                               <span>{formatPlanName(orgData.plan)}</span>
-                              <span className="text-[10px] uppercase font-extrabold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">
-                                Active Subscription
-                              </span>
                             </span>
                           )}
                         </div>
