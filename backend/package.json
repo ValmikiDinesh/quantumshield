@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc && mkdir -p dist/assets && cp -r src/assets/* dist/assets/",
+    "seed:admin": "tsx src/scripts/seedSuperAdmin.ts",
     "start": "node dist/server.js",
     "test": "vitest run"
   },

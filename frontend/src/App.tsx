@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
+import { AdminProtectedRoute, AdminPublicOnlyRoute } from './components/admin/AdminProtectedRoute';
+import { PlatformAnnouncementBanner } from './components/common/PlatformAnnouncementBanner';
 import { LandingPage } from './pages/public/LandingPage';
 import { LoginPage } from './pages/public/LoginPage';
 import { RegisterPage } from './pages/public/RegisterPage';
@@ -16,6 +19,17 @@ import { ProjectDetailPage } from './pages/app/ProjectDetailPage';
 import { ScanDetailPage } from './pages/app/ScanDetailPage';
 import { ScanComparePage } from './pages/app/ScanComparePage';
 import { OrganizationBillingPage } from './pages/app/OrganizationBillingPage';
+
+// Admin Pages
+import { AdminLoginPage } from './pages/admin/AdminLoginPage';
+import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
+import { AdminOrganizationsPage } from './pages/admin/AdminOrganizationsPage';
+import { AdminUsersPage } from './pages/admin/AdminUsersPage';
+import { AdminPaymentsPage } from './pages/admin/AdminPaymentsPage';
+import { AdminScansPage } from './pages/admin/AdminScansPage';
+import { AdminSystemPage } from './pages/admin/AdminSystemPage';
+import { AdminAuditLogsPage } from './pages/admin/AdminAuditLogsPage';
+
 import { Loader2 } from 'lucide-react';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -59,95 +73,165 @@ const ScrollToTop: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPolicyPage />} />
-          <Route path="/refund-policy" element={<RefundPolicyPage />} />
-          <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route
-            path="/login"
-            element={
-              <PublicOnlyRoute>
-                <LoginPage />
-              </PublicOnlyRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicOnlyRoute>
-                <RegisterPage />
-              </PublicOnlyRoute>
-            }
-          />
-          <Route
-            path="/forgot-password"
-            element={
-              <PublicOnlyRoute>
-                <ForgotPasswordPage />
-              </PublicOnlyRoute>
-            }
-          />
+      <AdminAuthProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <PlatformAnnouncementBanner />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/refund-policy" element={<RefundPolicyPage />} />
+            <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route
+              path="/login"
+              element={
+                <PublicOnlyRoute>
+                  <LoginPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicOnlyRoute>
+                  <RegisterPage />
+                </PublicOnlyRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <PublicOnlyRoute>
+                  <ForgotPasswordPage />
+                </PublicOnlyRoute>
+              }
+            />
 
-          {/* Authenticated routes */}
-          <Route
-            path="/app"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/app/projects"
-            element={
-              <ProtectedRoute>
-                <ProjectsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/app/projects/:id"
-            element={
-              <ProtectedRoute>
-                <ProjectDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/app/scans/:scanId"
-            element={
-              <ProtectedRoute>
-                <ScanDetailPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/app/compare"
-            element={
-              <ProtectedRoute>
-                <ScanComparePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/app/billing"
-            element={
-              <ProtectedRoute>
-                <OrganizationBillingPage />
-              </ProtectedRoute>
-            }
-          />
+            {/* Customer Authenticated routes */}
+            <Route
+              path="/app"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/app/projects"
+              element={
+                <ProtectedRoute>
+                  <ProjectsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/app/projects/:id"
+              element={
+                <ProtectedRoute>
+                  <ProjectDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/app/scans/:scanId"
+              element={
+                <ProtectedRoute>
+                  <ScanDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/app/compare"
+              element={
+                <ProtectedRoute>
+                  <ScanComparePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/app/billing"
+              element={
+                <ProtectedRoute>
+                  <OrganizationBillingPage />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Super Admin Control Plane Routes */}
+            <Route
+              path="/admin/login"
+              element={
+                <AdminPublicOnlyRoute>
+                  <AdminLoginPage />
+                </AdminPublicOnlyRoute>
+              }
+            />
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDashboardPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/organizations"
+              element={
+                <AdminProtectedRoute>
+                  <AdminOrganizationsPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminProtectedRoute>
+                  <AdminUsersPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/payments"
+              element={
+                <AdminProtectedRoute>
+                  <AdminPaymentsPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/scans"
+              element={
+                <AdminProtectedRoute>
+                  <AdminScansPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/system"
+              element={
+                <AdminProtectedRoute>
+                  <AdminSystemPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/audit-logs"
+              element={
+                <AdminProtectedRoute>
+                  <AdminAuditLogsPage />
+                </AdminProtectedRoute>
+              }
+            />
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AdminAuthProvider>
     </AuthProvider>
   );
 };

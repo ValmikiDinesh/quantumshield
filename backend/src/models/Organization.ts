@@ -7,6 +7,9 @@ export interface IOrganization extends Document {
   plan: PlanTier;
   maxProjects: number;
   maxScansPerMonth: number;
+  status: 'active' | 'suspended';
+  suspendedReason?: string;
+  suspendedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +25,14 @@ const OrganizationSchema: Schema = new Schema(
     },
     maxProjects: { type: Number, default: 1 },
     maxScansPerMonth: { type: Number, default: 0 },
+    status: {
+      type: String,
+      enum: ['active', 'suspended'],
+      default: 'active',
+      index: true,
+    },
+    suspendedReason: { type: String },
+    suspendedAt: { type: Date },
   },
   { timestamps: true }
 );

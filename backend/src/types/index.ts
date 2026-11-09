@@ -12,6 +12,18 @@ export interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;
 }
 
+export interface AuthenticatedSuperAdmin {
+  adminId: string;
+  email: string;
+  name: string;
+  role: 'superadmin' | 'support' | 'auditor';
+  isSuperAdmin: true;
+}
+
+export interface AuthenticatedAdminRequest extends Request {
+  admin?: AuthenticatedSuperAdmin;
+}
+
 export interface FileScanInput {
   filePath: string;
   relativePath: string;

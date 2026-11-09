@@ -7,6 +7,7 @@ import { Project } from '../models/Project';
 import { Scan } from '../models/Scan';
 import { Organization } from '../models/Organization';
 import { AuditLog } from '../models/AuditLog';
+import { PlatformSetting } from '../models/PlatformSetting';
 import { SafeZipExtractor } from '../scanner/extractor';
 import { ScannerEngine } from '../scanner/engine';
 import { ReportService } from '../services/reportService';
@@ -43,6 +44,17 @@ export class ScanController {
       const project = await Project.findOne({ _id: projectId, organizationId: orgId });
       if (!project) {
         res.status(404).json({ success: false, error: 'Project not found or access denied.' });
+        return;
+      }
+
+      // Check if global scan queue is paused by Super Admin
+      const scanPause = await PlatformSetting.findOne({ key: 'scanQueuePaused' });
+      if (scanPause?.value?.enabled) {
+        res.status(503).json({
+          success: false,
+          code: 'SCAN_QUEUE_PAUSED',
+          error: scanPause.value.reason || 'The scanning engine is temporarily paused for platform maintenance. Please try again shortly.',
+        });
         return;
       }
 
@@ -192,6 +204,17 @@ export class ScanController {
       const project = await Project.findOne({ _id: projectId, organizationId: orgId });
       if (!project) {
         res.status(404).json({ success: false, error: 'Project not found or access denied.' });
+        return;
+      }
+
+      // Check if global scan queue is paused by Super Admin
+      const scanPause = await PlatformSetting.findOne({ key: 'scanQueuePaused' });
+      if (scanPause?.value?.enabled) {
+        res.status(503).json({
+          success: false,
+          code: 'SCAN_QUEUE_PAUSED',
+          error: scanPause.value.reason || 'The scanning engine is temporarily paused for platform maintenance. Please try again shortly.',
+        });
         return;
       }
 
@@ -349,6 +372,17 @@ export class ScanController {
       const project = await Project.findOne({ _id: projectId, organizationId: orgId });
       if (!project) {
         res.status(404).json({ success: false, error: 'Project not found' });
+        return;
+      }
+
+      // Check if global scan queue is paused by Super Admin
+      const scanPause = await PlatformSetting.findOne({ key: 'scanQueuePaused' });
+      if (scanPause?.value?.enabled) {
+        res.status(503).json({
+          success: false,
+          code: 'SCAN_QUEUE_PAUSED',
+          error: scanPause.value.reason || 'The scanning engine is temporarily paused for platform maintenance. Please try again shortly.',
+        });
         return;
       }
 
@@ -690,6 +724,17 @@ export class ScanController {
         return;
       }
 
+      // Check if global scan queue is paused by Super Admin
+      const scanPause = await PlatformSetting.findOne({ key: 'scanQueuePaused' });
+      if (scanPause?.value?.enabled) {
+        res.status(503).json({
+          success: false,
+          code: 'SCAN_QUEUE_PAUSED',
+          error: scanPause.value.reason || 'The scanning engine is temporarily paused for platform maintenance. Please try again shortly.',
+        });
+        return;
+      }
+
       // Check organization scan limits and subscription status
       const org = await Organization.findById(orgId);
       if (!org || org.plan === 'none' || org.maxScansPerMonth <= 0) {
@@ -743,6 +788,17 @@ export class ScanController {
       const project = await Project.findById(scan.projectId);
       if (!project) {
         res.status(404).json({ success: false, error: 'Project not found' });
+        return;
+      }
+
+      // Check if global scan queue is paused by Super Admin
+      const scanPause = await PlatformSetting.findOne({ key: 'scanQueuePaused' });
+      if (scanPause?.value?.enabled) {
+        res.status(503).json({
+          success: false,
+          code: 'SCAN_QUEUE_PAUSED',
+          error: scanPause.value.reason || 'The scanning engine is temporarily paused for platform maintenance. Please try again shortly.',
+        });
         return;
       }
 

@@ -2,12 +2,13 @@ import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { AuthenticatedRequest, AuthenticatedUser } from '../types';
+import { Organization } from '../models/Organization';
 
-export function requireAuth(
+export async function requireAuth(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): void {
+): Promise<void> {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({
@@ -23,6 +24,20 @@ export function requireAuth(
       algorithms: ['HS256'],
     }) as AuthenticatedUser;
     req.user = decoded;
+
+    // Check organization suspension
+    if (decoded.organizationId) {
+      const org = await Organization.findById(decoded.organizationId).select('status suspendedReason');
+      if (org && org.status === 'suspended') {
+        res.status(403).json({
+          success: false,
+          code: 'ORG_SUSPENDED',
+          error: `This organization has been suspended: ${org.suspendedReason || 'Administrative suspension'}. Please contact support@valmikisoftwares.com.`,
+        });
+        return;
+      }
+    }
+
     next();
   } catch (err: any) {
     res.status(401).json({

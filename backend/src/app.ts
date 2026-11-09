@@ -6,6 +6,8 @@ import path from 'path';
 import fs from 'fs';
 import { env } from './config/env';
 import apiRouter from './routes/api';
+import adminRouter from './routes/adminRoutes';
+import { AdminSettingsController } from './controllers/admin/adminSettingsController';
 
 const app = express();
 
@@ -65,7 +67,9 @@ if (env.NODE_ENV !== 'test') {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Mount API router
+// Mount API routers
+app.use('/api/admin', adminRouter);
+app.get('/api/announcement', AdminSettingsController.getPublicAnnouncement);
 app.use('/api', apiRouter);
 
 // Serve static frontend in production if built

@@ -10,6 +10,8 @@ const envSchema = z.object({
   MONGODB_URI: z.string().default('mongodb://localhost:27017/quantumshield'),
   JWT_SECRET: z.string().default('quantumshield_super_secure_jwt_secret_dev_only_change_in_prod'),
   JWT_EXPIRES_IN: z.string().default('24h'),
+  JWT_ADMIN_SECRET: z.string().default('quantumshield_superadmin_secret_isolated_key_change_in_prod'),
+  ADMIN_SESSION_EXPIRES_IN: z.string().default('2h'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   GEMINI_API_KEY: z.string().optional(),
   MAX_UPLOAD_SIZE_MB: z.string().default('250'),
