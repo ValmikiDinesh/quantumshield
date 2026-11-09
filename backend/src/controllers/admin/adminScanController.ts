@@ -59,7 +59,6 @@ export class AdminScanController {
 
       scan.status = 'failed';
       scan.errorMessage = 'Aborted by Super Administrator.';
-      scan.completedAt = new Date();
       await scan.save();
 
       const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
@@ -132,3 +131,4 @@ export class AdminScanController {
     }
   }
 }
+

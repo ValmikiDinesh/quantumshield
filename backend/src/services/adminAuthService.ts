@@ -70,7 +70,7 @@ export class AdminAuthService {
         isSuperAdmin: true,
       },
       env.JWT_ADMIN_SECRET,
-      { expiresIn: env.ADMIN_SESSION_EXPIRES_IN }
+      { expiresIn: env.ADMIN_SESSION_EXPIRES_IN as any }
     );
 
     await this.recordAudit(
@@ -162,3 +162,4 @@ export class AdminAuthService {
     };
   }
 }
+
